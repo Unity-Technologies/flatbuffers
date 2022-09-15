@@ -873,6 +873,9 @@ class SwiftGenerator : public BaseGenerator {
       code_ +=
           "{{ACCESS_TYPE}} var {{FIELDVAR}}: [{{VALUETYPE}}] { return "
           "{{ACCESS}}.getVector(at: {{TABLEOFFSET}}.{{OFFSET}}.v) ?? [] }";
+      code_ +=
+          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}> { return "
+          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) ?? .init(start: nil, count: 0) }";
       if (parser_.opts.mutable_buffer) code_ += GenMutateArray();
       return;
     }
@@ -882,11 +885,14 @@ class SwiftGenerator : public BaseGenerator {
       code_ +=
           "{{ACCESS}}.directRead(of: {{VALUETYPE}}.self, offset: "
           "{{ACCESS}}.vector(at: o) + index * {{SIZE}}) }";
+      // do this before we swap to mutable, we don't want the mutable version
+      code_ +=
+          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}> { return "
+          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) ?? .init(start: nil, count: 0) }";
       code_.SetValue("FIELDMETHOD", namer_.Method("mutable", field));
       code_.SetValue("VALUETYPE", GenType(field.value.type) + Mutable());
       code_ += GenArrayMainBody(nullable) + GenOffset() + const_string +
                GenConstructor("{{ACCESS}}.vector(at: o) + index * {{SIZE}}");
-
       return;
     }
 
