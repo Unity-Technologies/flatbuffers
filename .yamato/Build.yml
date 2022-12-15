@@ -3,7 +3,8 @@ all:
   dependencies:
     - .yamato/Build.yml#build_linux
     - .yamato/Build.yml#build_windows
-    - .yamato/Build.yml#build_osx
+    - .yamato/Build.yml#build_osx_x86_64
+    - .yamato/Build.yml#build_osx_arm64
 
 build_linux:
   name: Build - Linux
@@ -38,17 +39,37 @@ build_windows:
       paths:
         - Release\flatc.exe
 
-build_osx:
-  name: Build - OSX
+build_osx_x86_64:
+  name: Build - OSX - x86_64
   agent:
     type: Unity::VM::osx
-    image: platform-foundation/mac-bokken:v0.1.8-972754
+    image: slough-ops/macos-13-xcode:stable
     flavor: b1.xlarge
     config:
       env_vars:
         - PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
   commands:
-    - cmake -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_BUILD_TYPE=Release
+    - brew install cmake
+    - cmake -G "Xcode" -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --config Release
+  timeout: 30
+  artifacts:
+    reported_artifacts:
+      paths:
+        - Release\flatc
+
+build_osx_arm64:
+  name: Build - OSX - arm64
+  agent:
+    type: Unity::VM::osx
+    image: slough-ops/macos-13-xcode:stable
+    flavor: b1.xlarge
+    config:
+      env_vars:
+        - PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
+  commands:
+    - brew install cmake
+    - cmake -G "Xcode" -DFLATBUFFERS_BUILD_TESTS=0 -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --config Release
   timeout: 30
   artifacts:
