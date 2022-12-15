@@ -289,8 +289,11 @@ class SwiftGenerator : public BaseGenerator {
       if (!IsEnum(field.value.type)) {
         code_ += GenReaderMainBody() + "_{{FIELDVAR}} }";
       } else if (IsEnum(field.value.type)) {
+        EnumDef &enum_def = *field.value.type.enum_def;
+        const bool is_bit_flags = enum_def.attributes.Lookup("bit_flags") != nullptr;
         code_ +=
-            GenReaderMainBody() + "{{VALUETYPE}}(rawValue: _{{FIELDVAR}})! }";
+            GenReaderMainBody() + "{{VALUETYPE}}(rawValue: _{{FIELDVAR}})" +
+            (is_bit_flags ? "" : "!") + " }";
       }
     }
     code_ += "";
@@ -355,10 +358,12 @@ class SwiftGenerator : public BaseGenerator {
         code_ +=
             GenReaderMainBody() + "return " + GenReader("VALUETYPE") + " }";
       } else if (IsEnum(field.value.type)) {
+        EnumDef &enum_def = *field.value.type.enum_def;
+        const bool is_bit_flags = enum_def.attributes.Lookup("bit_flags") != nullptr;
         code_.SetValue("BASEVALUE", GenTypeBasic(field.value.type, false));
         code_ += GenReaderMainBody() + "return " +
-                 GenEnumConstructor("{{OFFSET}}") + "?? " +
-                 GenEnumDefaultValue(field) + " }";
+                  GenEnumConstructor("{{OFFSET}}") +
+                  (is_bit_flags ? "": ("?? " + GenEnumDefaultValue(field))) + " }";
       } else if (IsStruct(field.value.type)) {
         code_.SetValue("VALUETYPE", GenType(field.value.type) + Mutable());
         code_ += GenReaderMainBody() + "return " +
@@ -773,12 +778,14 @@ class SwiftGenerator : public BaseGenerator {
     }
 
     if (IsEnum(field.value.type)) {
+      EnumDef &enum_def = *field.value.type.enum_def;
+      const bool is_bit_flags = enum_def.attributes.Lookup("bit_flags") != nullptr;
       const auto default_value =
           field.IsOptional() ? "nil" : GenEnumDefaultValue(field);
       code_.SetValue("BASEVALUE", GenTypeBasic(field.value.type, false));
       code_ += GenReaderMainBody(optional) + "\\";
       code_ += GenOffset() + "return o == 0 ? " + default_value + " : " +
-               GenEnumConstructor("o") + "?? " + default_value + " }";
+               GenEnumConstructor("o") + (is_bit_flags ? "" : ("?? " + default_value)) + " }";
       if (parser_.opts.mutable_buffer && !IsUnion(field.value.type))
         code_ += GenMutate("o", GenOffset(), true);
       return;
@@ -1204,18 +1211,21 @@ class SwiftGenerator : public BaseGenerator {
 
   void GenEnum(const EnumDef &enum_def) {
     if (enum_def.generated) return;
+    const bool is_bit_flags = enum_def.attributes.Lookup("bit_flags") != nullptr;
     const bool is_private_access = parser_.opts.swift_implementation_only ||
        enum_def.attributes.Lookup("private") != nullptr;
     code_.SetValue("ENUM_TYPE",
                    enum_def.is_union ? "UnionEnum" : "Enum, Verifiable");
     code_.SetValue("ACCESS_TYPE", is_private_access ? "internal" : "public");
     code_.SetValue("ENUM_NAME", namer_.NamespacedType(enum_def));
-    code_.SetValue("BASE_TYPE", GenTypeBasic(enum_def.underlying_type, false));
+    code_.SetValue("BASE_TYPE", is_bit_flags ? "OptionSet" : GenTypeBasic(enum_def.underlying_type, false));
+    code_.SetValue("UNDERLYING_TYPE", GenTypeBasic(enum_def.underlying_type, false));
+    code_.SetValue("DECL_TYPE", is_bit_flags ? "struct" : "enum");
     GenComment(enum_def.doc_comment);
     code_ +=
-        "{{ACCESS_TYPE}} enum {{ENUM_NAME}}: {{BASE_TYPE}}, {{ENUM_TYPE}} {";
+        "{{ACCESS_TYPE}} {{DECL_TYPE}} {{ENUM_NAME}}: {{BASE_TYPE}}, {{ENUM_TYPE}} {";
     Indent();
-    code_ += "{{ACCESS_TYPE}} typealias T = {{BASE_TYPE}}";
+    code_ += "{{ACCESS_TYPE}} typealias T = {{UNDERLYING_TYPE}}";
     if (enum_def.is_union) {
       code_ += "";
       code_ += "{{ACCESS_TYPE}} init?(value: T) {";
@@ -1223,25 +1233,47 @@ class SwiftGenerator : public BaseGenerator {
       code_ += "self.init(rawValue: value)";
       Outdent();
       code_ += "}\n";
+    } else if (is_bit_flags) {
+      code_ += "{{ACCESS_TYPE}} let rawValue: T";
+      code_ += "";
+      code_ += "{{ACCESS_TYPE}} init(rawValue: T) {";
+      Indent();
+      code_ += "self.rawValue = rawValue";
+      Outdent();
+      code_ += "}\n";
     }
     code_ +=
         "{{ACCESS_TYPE}} static var byteSize: Int { return "
-        "MemoryLayout<{{BASE_TYPE}}>.size "
+        "MemoryLayout<{{UNDERLYING_TYPE}}>.size "
         "}";
     code_ +=
-        "{{ACCESS_TYPE}} var value: {{BASE_TYPE}} { return self.rawValue }";
+        "{{ACCESS_TYPE}} var value: {{UNDERLYING_TYPE}} { return self.rawValue }";
+
     for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
       const auto &ev = **it;
       code_.SetValue("KEY", namer_.LegacySwiftVariant(ev));
       code_.SetValue("VALUE", enum_def.ToString(ev));
       GenComment(ev.doc_comment);
-      code_ += "case {{KEY}} = {{VALUE}}";
+      if (is_bit_flags)
+        code_ += "{{ACCESS_TYPE}} static let {{KEY}}"
+             " = {{ENUM_NAME}}(rawValue: {{VALUE}})";
+      else
+        code_ += "case {{KEY}} = {{VALUE}}";
     }
     code_ += "";
-    AddMinOrMaxEnumValue(namer_.LegacySwiftVariant(*enum_def.MaxValue()),
-                         "max");
-    AddMinOrMaxEnumValue(namer_.LegacySwiftVariant(*enum_def.MinValue()),
-                         "min");
+    if (is_bit_flags) {
+      code_ += "{{ACCESS_TYPE}} static let none"
+              " = {{ENUM_NAME}}()";
+
+      code_.SetValue("VALUE", enum_def.AllFlags());
+      code_ += "{{ACCESS_TYPE}} static let all"
+              " = {{ENUM_NAME}}(rawValue: {{VALUE}})";
+    } else {
+      AddMinOrMaxEnumValue(namer_.LegacySwiftVariant(*enum_def.MaxValue()),
+                          "max");
+      AddMinOrMaxEnumValue(namer_.LegacySwiftVariant(*enum_def.MinValue()),
+                          "min");
+    }
     Outdent();
     code_ += "}\n";
     if (parser_.opts.gen_json_coders) EnumEncoder(enum_def);
