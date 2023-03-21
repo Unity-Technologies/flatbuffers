@@ -51,6 +51,8 @@ public struct BytesCount_Mutable: FlatBufferObject {
   public var __buffer: ByteBuffer! { return _accessor.bb }
   private var _accessor: Struct
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> BytesCount_Mutable { return BytesCount_Mutable(bb, o: 0) }
+
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Struct(bb: bb, position: o) }
 
   public var x: Int64 { return _accessor.readBuffer(of: Int64.self, at: 0) }
@@ -77,6 +79,8 @@ public struct InternalMessage: FlatBufferObject, Verifiable, ObjectAPIPacker {
   private var _accessor: Table
 
   public static func getRootAsInternalMessage(bb: ByteBuffer) -> InternalMessage { return InternalMessage(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
+
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> InternalMessage { return getRootAsInternalMessage(bb: bb) }
 
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }
@@ -162,6 +166,8 @@ public struct Message: FlatBufferObject, Verifiable, ObjectAPIPacker {
   private var _accessor: Table
 
   public static func getRootAsMessage(bb: ByteBuffer) -> Message { return Message(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
+
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> Message { return getRootAsMessage(bb: bb) }
 
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }

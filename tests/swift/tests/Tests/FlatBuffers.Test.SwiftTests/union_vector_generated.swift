@@ -167,6 +167,8 @@ public struct Rapunzel_Mutable: FlatBufferObject {
   public var __buffer: ByteBuffer! { return _accessor.bb }
   private var _accessor: Struct
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> Rapunzel_Mutable { return Rapunzel_Mutable(bb, o: 0) }
+
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Struct(bb: bb, position: o) }
 
   public var hairLength: Int32 { return _accessor.readBuffer(of: Int32.self, at: 0) }
@@ -234,6 +236,8 @@ public struct BookReader_Mutable: FlatBufferObject {
   static func validateVersion() { FlatBuffersVersion_22_10_26() }
   public var __buffer: ByteBuffer! { return _accessor.bb }
   private var _accessor: Struct
+
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> BookReader_Mutable { return BookReader_Mutable(bb, o: 0) }
 
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Struct(bb: bb, position: o) }
 
@@ -303,6 +307,8 @@ public struct FallingTub_Mutable: FlatBufferObject {
   public var __buffer: ByteBuffer! { return _accessor.bb }
   private var _accessor: Struct
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> FallingTub_Mutable { return FallingTub_Mutable(bb, o: 0) }
+
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Struct(bb: bb, position: o) }
 
   public var weight: Int32 { return _accessor.readBuffer(of: Int32.self, at: 0) }
@@ -331,6 +337,8 @@ public struct Attacker: FlatBufferObject, Verifiable, ObjectAPIPacker {
   public static var id: String { "MOVI" } 
   public static func finish(_ fbb: inout FlatBufferBuilder, end: Offset, prefix: Bool = false) { fbb.finish(offset: end, fileId: Attacker.id, addPrefix: prefix) }
   public static func getRootAsAttacker(bb: ByteBuffer) -> Attacker { return Attacker(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
+
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> Attacker { return getRootAsAttacker(bb: bb) }
 
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }
@@ -415,6 +423,8 @@ public struct HandFan: FlatBufferObject, Verifiable, ObjectAPIPacker {
   public static func finish(_ fbb: inout FlatBufferBuilder, end: Offset, prefix: Bool = false) { fbb.finish(offset: end, fileId: HandFan.id, addPrefix: prefix) }
   public static func getRootAsHandFan(bb: ByteBuffer) -> HandFan { return HandFan(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> HandFan { return getRootAsHandFan(bb: bb) }
+
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }
 
@@ -497,6 +507,8 @@ public struct Movie: FlatBufferObject, Verifiable, ObjectAPIPacker {
   public static var id: String { "MOVI" } 
   public static func finish(_ fbb: inout FlatBufferBuilder, end: Offset, prefix: Bool = false) { fbb.finish(offset: end, fileId: Movie.id, addPrefix: prefix) }
   public static func getRootAsMovie(bb: ByteBuffer) -> Movie { return Movie(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
+
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> Movie { return getRootAsMovie(bb: bb) }
 
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }

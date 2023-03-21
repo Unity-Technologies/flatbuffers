@@ -35,6 +35,8 @@ public struct MoreDefaults: FlatBufferObject, Verifiable, ObjectAPIPacker {
 
   public static func getRootAsMoreDefaults(bb: ByteBuffer) -> MoreDefaults { return MoreDefaults(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> MoreDefaults { return getRootAsMoreDefaults(bb: bb) }
+
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }
 
