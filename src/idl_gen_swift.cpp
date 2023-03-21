@@ -1249,25 +1249,26 @@ class SwiftGenerator : public BaseGenerator {
     code_ +=
         "{{ACCESS_TYPE}} var value: {{UNDERLYING_TYPE}} { return self.rawValue }";
 
+    std::string all_bit_flags = "";
+
     for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
       const auto &ev = **it;
       code_.SetValue("KEY", namer_.LegacySwiftVariant(ev));
       code_.SetValue("VALUE", enum_def.ToString(ev));
       GenComment(ev.doc_comment);
-      if (is_bit_flags)
+      if (is_bit_flags) {
         code_ += "{{ACCESS_TYPE}} static let {{KEY}}"
              " = {{ENUM_NAME}}(rawValue: {{VALUE}})";
-      else
+        if (it != enum_def.Vals().begin())
+          all_bit_flags += ", ";
+        all_bit_flags += "." + namer_.LegacySwiftVariant(ev);
+      } else
         code_ += "case {{KEY}} = {{VALUE}}";
     }
     code_ += "";
     if (is_bit_flags) {
-      code_ += "{{ACCESS_TYPE}} static let none"
-              " = {{ENUM_NAME}}()";
-
-      code_.SetValue("VALUE", enum_def.AllFlags());
-      code_ += "{{ACCESS_TYPE}} static let all"
-              " = {{ENUM_NAME}}(rawValue: {{VALUE}})";
+      code_ += "{{ACCESS_TYPE}} static let none: {{ENUM_NAME}} = []";
+      code_ += "{{ACCESS_TYPE}} static let all: {{ENUM_NAME}} = [" + all_bit_flags + "]";
     } else {
       AddMinOrMaxEnumValue(namer_.LegacySwiftVariant(*enum_def.MaxValue()),
                           "max");
@@ -1303,19 +1304,24 @@ class SwiftGenerator : public BaseGenerator {
   }
 
   void EnumEncoder(const EnumDef &enum_def) {
+    const bool is_bit_flags = enum_def.attributes.Lookup("bit_flags") != nullptr;
     code_ += "extension {{ENUM_NAME}}: Encodable {";
     Indent();
     code_ += "{{ACCESS_TYPE}} func encode(to encoder: Encoder) throws {";
     Indent();
     code_ += "var container = encoder.singleValueContainer()";
-    code_ += "switch self {";
-    for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
-      const auto &ev = **it;
-      code_.SetValue("KEY", namer_.LegacySwiftVariant(ev));
-      code_.SetValue("RAWKEY", ev.name);
-      code_ += "case .{{KEY}}: try container.encode(\"{{RAWKEY}}\")";
+    if (!is_bit_flags) {
+      code_ += "switch self {";
+      for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
+        const auto &ev = **it;
+        code_.SetValue("KEY", namer_.LegacySwiftVariant(ev));
+        code_.SetValue("RAWKEY", ev.name);
+        code_ += "case .{{KEY}}: try container.encode(\"{{RAWKEY}}\")";
+      }
+      code_ += "}";
+    } else {
+      code_ += "try container.encode(rawValue)";
     }
-    code_ += "}";
     Outdent();
     code_ += "}";
     Outdent();
