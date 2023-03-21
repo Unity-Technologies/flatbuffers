@@ -35,6 +35,9 @@ public protocol FlatbuffersInitializable {
 /// FlatbufferObject structures all the Flatbuffers objects
 public protocol FlatBufferObject: FlatbuffersInitializable {
   var __buffer: ByteBuffer! { get }
+
+  /// return the current object, unpacked from ByteBuffer.
+  static func fromByteBuffer(_ bb: ByteBuffer) -> Self
 }
 
 /// ``ObjectAPIPacker`` is a protocol that allows object to pack and unpack from a
