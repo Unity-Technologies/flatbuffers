@@ -12,6 +12,8 @@ public struct Swift_Tests_Vectors: FlatBufferObject, Verifiable {
 
   public static func getRootAsVectors(bb: ByteBuffer) -> Swift_Tests_Vectors { return Swift_Tests_Vectors(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> Swift_Tests_Vectors { return getRootAsVectors(bb: bb) }
+
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }
 

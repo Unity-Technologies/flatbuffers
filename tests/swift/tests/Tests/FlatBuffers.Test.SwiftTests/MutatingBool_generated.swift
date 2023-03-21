@@ -53,6 +53,8 @@ public struct Property_Mutable: FlatBufferObject {
   public var __buffer: ByteBuffer! { return _accessor.bb }
   private var _accessor: Struct
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> Property_Mutable { return Property_Mutable(bb, o: 0) }
+
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Struct(bb: bb, position: o) }
 
   public var property: Bool { return _accessor.readBuffer(of: Bool.self, at: 0) }
@@ -79,6 +81,8 @@ public struct TestMutatingBool: FlatBufferObject, Verifiable, ObjectAPIPacker {
   private var _accessor: Table
 
   public static func getRootAsTestMutatingBool(bb: ByteBuffer) -> TestMutatingBool { return TestMutatingBool(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
+
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> TestMutatingBool { return getRootAsTestMutatingBool(bb: bb) }
 
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }

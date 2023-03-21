@@ -37,6 +37,8 @@ public struct optional_scalars_ScalarStuff: FlatBufferObject, Verifiable {
   public static func finish(_ fbb: inout FlatBufferBuilder, end: Offset, prefix: Bool = false) { fbb.finish(offset: end, fileId: optional_scalars_ScalarStuff.id, addPrefix: prefix) }
   public static func getRootAsScalarStuff(bb: ByteBuffer) -> optional_scalars_ScalarStuff { return optional_scalars_ScalarStuff(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
 
+  public static func fromByteBuffer(_ bb: ByteBuffer) -> optional_scalars_ScalarStuff { return getRootAsScalarStuff(bb: bb) }
+
   private init(_ t: Table) { _accessor = t }
   public init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }
 

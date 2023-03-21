@@ -529,7 +529,15 @@ class SwiftGenerator : public BaseGenerator {
           "{{STRUCTNAME}} { return {{STRUCTNAME}}(Table(bb: bb, position: "
           "Int32(bb.read(def: UOffset.self, position: bb.reader)) + "
           "Int32(bb.reader))) }\n";
+      code_ +=
+          "{{ACCESS_TYPE}} static func fromByteBuffer(_ bb: ByteBuffer) -> "
+          "{{STRUCTNAME}} { return getRootAs{{SHORT_STRUCTNAME}}(bb: bb) }\n";
+
       code_ += "private init(_ t: Table) { {{ACCESS}} = t }";
+    } else {
+      code_ +=
+          "{{ACCESS_TYPE}} static func fromByteBuffer(_ bb: ByteBuffer) -> {{STRUCTNAME}}{{MUTABLE}} "
+          "{ return {{STRUCTNAME}}{{MUTABLE}}(bb, o: 0) }\n";
     }
     code_ +=
         "{{ACCESS_TYPE}} init(_ bb: ByteBuffer, o: Int32) { {{ACCESS}} = "

@@ -12,6 +12,8 @@ internal struct Message: FlatBufferObject, Verifiable, ObjectAPIPacker {
 
   internal static func getRootAsMessage(bb: ByteBuffer) -> Message { return Message(Table(bb: bb, position: Int32(bb.read(def: UOffset.self, position: bb.reader)) + Int32(bb.reader))) }
 
+  internal static func fromByteBuffer(_ bb: ByteBuffer) -> Message { return getRootAsMessage(bb: bb) }
+
   private init(_ t: Table) { _accessor = t }
   internal init(_ bb: ByteBuffer, o: Int32) { _accessor = Table(bb: bb, position: o) }
 
