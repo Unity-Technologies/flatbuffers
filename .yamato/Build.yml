@@ -1,0 +1,78 @@
+all:
+  name: ▶ Build All ◀
+  dependencies:
+    - .yamato/Build.yml#build_linux
+    - .yamato/Build.yml#build_windows
+    - .yamato/Build.yml#build_osx_x86_64
+    - .yamato/Build.yml#build_osx_arm64
+
+build_linux:
+  name: Build - Linux
+  agent:
+    type: Unity::VM
+    image: platform-foundation/linux-ubuntu-18.04-mono-bokken:0.1.7-978398
+    flavor: b1.xlarge
+    config:
+      env_vars:
+        - PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
+  commands:
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --config Release
+  timeout: 30
+  artifacts:
+    reported_artifacts:
+      paths:
+        - flatc
+
+build_windows:
+  name: Build - Windows
+  agent:
+    type: Unity::VM
+    image: burst/burst-base:1.0.8-1195360
+    flavor: b1.xlarge
+  commands:
+    - cmake -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --config Release
+  timeout: 30
+  artifacts:
+    reported_artifacts:
+      paths:
+        - Release\flatc.exe
+
+build_osx_x86_64:
+  name: Build - OSX - x86_64
+  agent:
+    type: Unity::VM::osx
+    image: slough-ops/macos-13-xcode:stable
+    flavor: b1.xlarge
+    config:
+      env_vars:
+        - PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
+  commands:
+    - brew install cmake
+    - cmake -G "Xcode" -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --config Release
+  timeout: 30
+  artifacts:
+    reported_artifacts:
+      paths:
+        - Release\flatc
+
+build_osx_arm64:
+  name: Build - OSX - arm64
+  agent:
+    type: Unity::VM::osx
+    image: slough-ops/macos-13-xcode:stable
+    flavor: b1.xlarge
+    config:
+      env_vars:
+        - PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
+  commands:
+    - brew install cmake
+    - cmake -G "Xcode" -DFLATBUFFERS_BUILD_TESTS=0 -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --config Release
+  timeout: 30
+  artifacts:
+    reported_artifacts:
+      paths:
+        - Release\flatc
