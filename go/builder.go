@@ -1,5 +1,7 @@
 package flatbuffers
 
+import "sort"
+
 // Builder is a state machine for creating FlatBuffer objects.
 // Use a Builder to construct object(s) starting from leaf nodes.
 //
@@ -102,15 +104,18 @@ func (b *Builder) StartObject(numfields int) {
 // logically-equal vtables will be deduplicated.
 //
 // A vtable has the following format:
-//   <VOffsetT: size of the vtable in bytes, including this value>
-//   <VOffsetT: size of the object in bytes, including the vtable offset>
-//   <VOffsetT: offset for a field> * N, where N is the number of fields in
-//	        the schema for this type. Includes deprecated fields.
+//
+//	  <VOffsetT: size of the vtable in bytes, including this value>
+//	  <VOffsetT: size of the object in bytes, including the vtable offset>
+//	  <VOffsetT: offset for a field> * N, where N is the number of fields in
+//		        the schema for this type. Includes deprecated fields.
+//
 // Thus, a vtable is made of 2 + N elements, each SizeVOffsetT bytes wide.
 //
 // An object has the following format:
-//   <SOffsetT: offset to this object's vtable (may be negative)>
-//   <byte: data>+
+//
+//	<SOffsetT: offset to this object's vtable (may be negative)>
+//	<byte: data>+
 func (b *Builder) WriteVtable() (n UOffsetT) {
 	// Prepend a zero scalar to the object. Later in this function we'll
 	// write an offset here that points to the object's vtable:
@@ -294,8 +299,9 @@ func (b *Builder) PrependUOffsetT(off UOffsetT) {
 // StartVector initializes bookkeeping for writing a new vector.
 //
 // A vector has the following format:
-//   <UOffsetT: number of elements in this vector>
-//   <T: data>+, where T is the type of elements of this vector.
+//
+//	<UOffsetT: number of elements in this vector>
+//	<T: data>+, where T is the type of elements of this vector.
 func (b *Builder) StartVector(elemSize, numElems, alignment int) UOffsetT {
 	b.assertNotNested()
 	b.nested = true
@@ -313,6 +319,25 @@ func (b *Builder) EndVector(vectorNumElems int) UOffsetT {
 
 	b.nested = false
 	return b.Offset()
+}
+
+// CreateVectorOfTables serializes slice of table offsets into a vector.
+func (b *Builder) CreateVectorOfTables(offsets []UOffsetT) UOffsetT {
+	b.assertNotNested()
+	b.StartVector(4, len(offsets), 4)
+	for i := len(offsets) - 1; i >= 0; i-- {
+		b.PrependUOffsetT(offsets[i])
+	}
+	return b.EndVector(len(offsets))
+}
+
+type KeyCompare func(o1, o2 UOffsetT, buf []byte) bool
+
+func (b *Builder) CreateVectorOfSortedTables(offsets []UOffsetT, keyCompare KeyCompare) UOffsetT {
+	sort.Slice(offsets, func(i, j int) bool {
+		return keyCompare(offsets[i], offsets[j], b.Bytes)
+	})
+	return b.CreateVectorOfTables(offsets)
 }
 
 // CreateSharedString Checks if the string is already written

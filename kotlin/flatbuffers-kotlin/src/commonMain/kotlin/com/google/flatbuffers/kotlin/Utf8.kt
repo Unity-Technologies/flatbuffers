@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 @file:Suppress("NOTHING_TO_INLINE")
+
 package com.google.flatbuffers.kotlin
 
 public object Utf8 {
   /**
-   * Returns the number of bytes in the UTF-8-encoded form of `sequence`. For a string,
-   * this method is equivalent to `string.getBytes(UTF_8).length`, but is more efficient in
-   * both time and space.
+   * Returns the number of bytes in the UTF-8-encoded form of `sequence`. For a string, this method
+   * is equivalent to `string.getBytes(UTF_8).length`, but is more efficient in both time and space.
    *
-   * @throws IllegalArgumentException if `sequence` contains ill-formed UTF-16 (unpaired
-   * surrogates)
+   * @throws IllegalArgumentException if `sequence` contains ill-formed UTF-16 (unpaired surrogates)
    */
   private fun computeEncodedLength(sequence: CharSequence): Int {
     // Warning to maintainers: this implementation is highly optimized.
@@ -32,15 +31,15 @@ public object Utf8 {
     var i = 0
 
     // This loop optimizes for pure ASCII.
-    while (i < utf16Length && sequence[i].toInt() < 0x80) {
+    while (i < utf16Length && sequence[i].code < 0x80) {
       i++
     }
 
     // This loop optimizes for chars less than 0x800.
     while (i < utf16Length) {
       val c = sequence[i]
-      if (c.toInt() < 0x800) {
-        utf8Length += 0x7f - c.toInt() ushr 31 // branch free!
+      if (c.code < 0x800) {
+        utf8Length += 0x7f - c.code ushr 31 // branch free!
       } else {
         utf8Length += encodedLengthGeneral(sequence, i)
         break
@@ -60,8 +59,8 @@ public object Utf8 {
     var i = start
     while (i < utf16Length) {
       val c = sequence[i]
-      if (c.toInt() < 0x800) {
-        utf8Length += 0x7f - c.toInt() ushr 31 // branch free!
+      if (c.code < 0x800) {
+        utf8Length += 0x7f - c.code ushr 31 // branch free!
       } else {
         utf8Length += 2
         if (c.isSurrogate()) {
@@ -79,45 +78,30 @@ public object Utf8 {
   }
 
   /**
-   * Returns the number of bytes in the UTF-8-encoded form of `sequence`. For a string,
-   * this method is equivalent to `string.getBytes(UTF_8).length`, but is more efficient in
-   * both time and space.
+   * Returns the number of bytes in the UTF-8-encoded form of `sequence`. For a string, this method
+   * is equivalent to `string.getBytes(UTF_8).length`, but is more efficient in both time and space.
    *
-   * @throws IllegalArgumentException if `sequence` contains ill-formed UTF-16 (unpaired
-   * surrogates)
+   * @throws IllegalArgumentException if `sequence` contains ill-formed UTF-16 (unpaired surrogates)
    */
   public fun encodedLength(sequence: CharSequence): Int = computeEncodedLength(sequence)
 
-  /**
-   * Returns whether this is a single-byte codepoint (i.e., ASCII) with the form '0XXXXXXX'.
-   */
+  /** Returns whether this is a single-byte codepoint (i.e., ASCII) with the form '0XXXXXXX'. */
   public inline fun isOneByte(b: Byte): Boolean = b >= 0
 
-  /**
-   * Returns whether this is a two-byte codepoint with the form 110xxxxx  0xC0..0xDF.
-   */
+  /** Returns whether this is a two-byte codepoint with the form 110xxxxx 0xC0..0xDF. */
   public inline fun isTwoBytes(b: Byte): Boolean = b < 0xE0.toByte()
 
-  /**
-   * Returns whether this is a three-byte codepoint with the form 1110xxxx  0xE0..0xEF.
-   */
+  /** Returns whether this is a three-byte codepoint with the form 1110xxxx 0xE0..0xEF. */
   public inline fun isThreeBytes(b: Byte): Boolean = b < 0xF0.toByte()
 
-  /**
-   * Returns whether this is a four-byte codepoint with the form 11110xxx  0xF0..0xF4.
-   */
+  /** Returns whether this is a four-byte codepoint with the form 11110xxx 0xF0..0xF4. */
   public inline fun isFourByte(b: Byte): Boolean = b < 0xF8.toByte()
 
   public fun handleOneByte(byte1: Byte, resultArr: CharArray, resultPos: Int) {
-    resultArr[resultPos] = byte1.toChar()
+    resultArr[resultPos] = byte1.toInt().toChar()
   }
 
-  public fun handleTwoBytes(
-    byte1: Byte,
-    byte2: Byte,
-    resultArr: CharArray,
-    resultPos: Int
-  ) {
+  public fun handleTwoBytes(byte1: Byte, byte2: Byte, resultArr: CharArray, resultPos: Int) {
     // Simultaneously checks for illegal trailing-byte in leading position (<= '11000000') and
     // overlong 2-byte, '11000001'.
     if (byte1 < 0xC2.toByte()) {
@@ -134,17 +118,23 @@ public object Utf8 {
     byte2: Byte,
     byte3: Byte,
     resultArr: CharArray,
-    resultPos: Int
+    resultPos: Int,
   ) {
-    if (isNotTrailingByte(byte2) || // overlong? 5 most significant bits must not all be zero
-      byte1 == 0xE0.toByte() && byte2 < 0xA0.toByte() || // check for illegal surrogate codepoints
-      byte1 == 0xED.toByte() && byte2 >= 0xA0.toByte() ||
-      isNotTrailingByte(byte3)
+    if (
+      isNotTrailingByte(byte2) || // overlong? 5 most significant bits must not all be zero
+        byte1 == 0xE0.toByte() && byte2 < 0xA0.toByte() || // check for illegal surrogate codepoints
+        byte1 == 0xED.toByte() && byte2 >= 0xA0.toByte() ||
+        isNotTrailingByte(byte3)
     ) {
       error("Invalid UTF-8")
     }
     resultArr[resultPos] =
-      (byte1.toInt() and 0x0F shl 12 or (trailingByteValue(byte2) shl 6) or trailingByteValue(byte3)).toChar()
+      (byte1.toInt() and
+          0x0F shl
+          12 or
+          (trailingByteValue(byte2) shl 6) or
+          trailingByteValue(byte3))
+        .toChar()
   }
 
   public fun handleFourBytes(
@@ -153,50 +143,47 @@ public object Utf8 {
     byte3: Byte,
     byte4: Byte,
     resultArr: CharArray,
-    resultPos: Int
+    resultPos: Int,
   ) {
-    if (isNotTrailingByte(byte2) || // Check that 1 <= plane <= 16.  Tricky optimized form of:
-      //   valid 4-byte leading byte?
-      // if (byte1 > (byte) 0xF4 ||
-      //   overlong? 4 most significant bits must not all be zero
-      //     byte1 == (byte) 0xF0 && byte2 < (byte) 0x90 ||
-      //   codepoint larger than the highest code point (U+10FFFF)?
-      //     byte1 == (byte) 0xF4 && byte2 > (byte) 0x8F)
-      (byte1.toInt() shl 28) + (byte2 - 0x90.toByte()) shr 30 != 0 || isNotTrailingByte(byte3) ||
-      isNotTrailingByte(byte4)
+    if (
+      isNotTrailingByte(byte2) || // Check that 1 <= plane <= 16.  Tricky optimized form of:
+        //   valid 4-byte leading byte?
+        // if (byte1 > (byte) 0xF4 ||
+        //   overlong? 4 most significant bits must not all be zero
+        //     byte1 == (byte) 0xF0 && byte2 < (byte) 0x90 ||
+        //   codepoint larger than the highest code point (U+10FFFF)?
+        //     byte1 == (byte) 0xF4 && byte2 > (byte) 0x8F)
+        (byte1.toInt() shl 28) + (byte2 - 0x90.toByte()) shr 30 != 0 ||
+        isNotTrailingByte(byte3) ||
+        isNotTrailingByte(byte4)
     ) {
       error("Invalid UTF-8")
     }
-    val codepoint: Int = (
-      byte1.toInt() and 0x07 shl 18
-        or (trailingByteValue(byte2) shl 12)
-        or (trailingByteValue(byte3) shl 6)
-        or trailingByteValue(byte4)
-      )
+    val codepoint: Int =
+      (byte1.toInt() and
+        0x07 shl
+        18 or
+        (trailingByteValue(byte2) shl 12) or
+        (trailingByteValue(byte3) shl 6) or
+        trailingByteValue(byte4))
     resultArr[resultPos] = highSurrogate(codepoint)
     resultArr[resultPos + 1] = lowSurrogate(codepoint)
   }
 
-  /**
-   * Returns whether the byte is not a valid continuation of the form '10XXXXXX'.
-   */
+  /** Returns whether the byte is not a valid continuation of the form '10XXXXXX'. */
   private fun isNotTrailingByte(b: Byte): Boolean = b > 0xBF.toByte()
 
-  /**
-   * Returns the actual value of the trailing byte (removes the prefix '10') for composition.
-   */
+  /** Returns the actual value of the trailing byte (removes the prefix '10') for composition. */
   private fun trailingByteValue(b: Byte): Int = b.toInt() and 0x3F
 
   private fun highSurrogate(codePoint: Int): Char =
-    (
-      Char.MIN_HIGH_SURROGATE - (MIN_SUPPLEMENTARY_CODE_POINT ushr 10) +
-        (codePoint ushr 10)
-      )
+    (Char.MIN_HIGH_SURROGATE - (MIN_SUPPLEMENTARY_CODE_POINT ushr 10) + (codePoint ushr 10))
 
   private fun lowSurrogate(codePoint: Int): Char = (Char.MIN_LOW_SURROGATE + (codePoint and 0x3ff))
 
   /**
    * Encode a [CharSequence] UTF8 codepoint into a byte array.
+   *
    * @param `in` CharSequence to be encoded
    * @param start start position of the first char in the codepoint
    * @param out byte array of 4 bytes to be filled
@@ -209,21 +196,21 @@ public object Utf8 {
       return 0
     }
     val c = input[start]
-    return if (c.toInt() < 0x80) {
+    return if (c.code < 0x80) {
       // One byte (0xxx xxxx)
-      out[0] = c.toByte()
+      out[0] = c.code.toByte()
       1
-    } else if (c.toInt() < 0x800) {
+    } else if (c.code < 0x800) {
       // Two bytes (110x xxxx 10xx xxxx)
-      out[0] = (0xC0 or (c.toInt() ushr 6)).toByte()
-      out[1] = (0x80 or (0x3F and c.toInt())).toByte()
+      out[0] = (0xC0 or (c.code ushr 6)).toByte()
+      out[1] = (0x80 or (0x3F and c.code)).toByte()
       2
     } else if (c < Char.MIN_SURROGATE || Char.MAX_SURROGATE < c) {
       // Three bytes (1110 xxxx 10xx xxxx 10xx xxxx)
       // Maximum single-char code point is 0xFFFF, 16 bits.
-      out[0] = (0xE0 or (c.toInt() ushr 12)).toByte()
-      out[1] = (0x80 or (0x3F and (c.toInt() ushr 6))).toByte()
-      out[2] = (0x80 or (0x3F and c.toInt())).toByte()
+      out[0] = (0xE0 or (c.code ushr 12)).toByte()
+      out[1] = (0x80 or (0x3F and (c.code ushr 6))).toByte()
+      out[2] = (0x80 or (0x3F and c.code)).toByte()
       3
     } else {
       // Four bytes (1111 xxxx 10xx xxxx 10xx xxxx 10xx xxxx)
@@ -296,10 +283,7 @@ public object Utf8 {
         if (offset >= limit) {
           error("Invalid UTF-8")
         }
-        handleTwoBytes(
-          byte1, /* byte2 */
-          bytes[offset++], resultArr, resultPos++
-        )
+        handleTwoBytes(byte1, /* byte2 */ bytes[offset++], resultArr, resultPos++)
       } else if (isThreeBytes(byte1)) {
         if (offset >= limit - 1) {
           error("Invalid UTF-8")
@@ -309,7 +293,7 @@ public object Utf8 {
           bytes[offset++], /* byte3 */
           bytes[offset++],
           resultArr,
-          resultPos++
+          resultPos++,
         )
       } else {
         if (offset >= limit - 2) {
@@ -321,7 +305,7 @@ public object Utf8 {
           bytes[offset++], /* byte4 */
           bytes[offset++],
           resultArr,
-          resultPos++
+          resultPos++,
         )
         // 4-byte case requires two chars.
         resultPos++
@@ -330,7 +314,12 @@ public object Utf8 {
     return resultArr.concatToString(0, resultPos)
   }
 
-  public fun encodeUtf8Array(input: CharSequence, out: ByteArray, offset: Int = 0, length: Int = out.size - offset): Int {
+  public fun encodeUtf8Array(
+    input: CharSequence,
+    out: ByteArray,
+    offset: Int = 0,
+    length: Int = out.size - offset,
+  ): Int {
     val utf16Length = input.length
     var j = offset
     var i = 0
@@ -338,11 +327,10 @@ public object Utf8 {
     // Designed to take advantage of
     // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
 
-    if (utf16Length == 0)
-      return 0
+    if (utf16Length == 0) return 0
     var cc: Char = input[i]
-    while (i < utf16Length && i + j < limit && input[i].also { cc = it }.toInt() < 0x80) {
-      out[j + i] = cc.toByte()
+    while (i < utf16Length && i + j < limit && input[i].also { cc = it }.code < 0x80) {
+      out[j + i] = cc.code.toByte()
       i++
     }
     if (i == utf16Length) {
@@ -352,23 +340,21 @@ public object Utf8 {
     var c: Char
     while (i < utf16Length) {
       c = input[i]
-      if (c.toInt() < 0x80 && j < limit) {
-        out[j++] = c.toByte()
-      } else if (c.toInt() < 0x800 && j <= limit - 2) { // 11 bits, two UTF-8 bytes
-        out[j++] = (0xF shl 6 or (c.toInt() ushr 6)).toByte()
-        out[j++] = (0x80 or (0x3F and c.toInt())).toByte()
+      if (c.code < 0x80 && j < limit) {
+        out[j++] = c.code.toByte()
+      } else if (c.code < 0x800 && j <= limit - 2) { // 11 bits, two UTF-8 bytes
+        out[j++] = (0xF shl 6 or (c.code ushr 6)).toByte()
+        out[j++] = (0x80 or (0x3F and c.code)).toByte()
       } else if ((c < Char.MIN_SURROGATE || Char.MAX_SURROGATE < c) && j <= limit - 3) {
         // Maximum single-char code point is 0xFFFF, 16 bits, three UTF-8 bytes
-        out[j++] = (0xF shl 5 or (c.toInt() ushr 12)).toByte()
-        out[j++] = (0x80 or (0x3F and (c.toInt() ushr 6))).toByte()
-        out[j++] = (0x80 or (0x3F and c.toInt())).toByte()
+        out[j++] = (0xF shl 5 or (c.code ushr 12)).toByte()
+        out[j++] = (0x80 or (0x3F and (c.code ushr 6))).toByte()
+        out[j++] = (0x80 or (0x3F and c.code)).toByte()
       } else if (j <= limit - 4) {
         // Minimum code point represented by a surrogate pair is 0x10000, 17 bits,
         // four UTF-8 bytes
         var low: Char = Char.MIN_VALUE
-        if (i + 1 == input.length ||
-          !isSurrogatePair(c, input[++i].also { low = it })
-        ) {
+        if (i + 1 == input.length || !isSurrogatePair(c, input[++i].also { low = it })) {
           errorSurrogate(i - 1, utf16Length)
         }
         val codePoint: Int = toCodePoint(c, low)
@@ -379,12 +365,14 @@ public object Utf8 {
       } else {
         // If we are surrogates and we're not a surrogate pair, always throw an
         // UnpairedSurrogateException instead of an ArrayOutOfBoundsException.
-        if (Char.MIN_SURROGATE <= c && c <= Char.MAX_SURROGATE &&
-          (i + 1 == input.length || !isSurrogatePair(c, input[i + 1]))
+        if (
+          Char.MIN_SURROGATE <= c &&
+            c <= Char.MAX_SURROGATE &&
+            (i + 1 == input.length || !isSurrogatePair(c, input[i + 1]))
         ) {
           errorSurrogate(i, utf16Length)
         }
-        error("Failed writing character ${c.toShort().toString(radix = 16)} at index $j")
+        error("Failed writing character ${c.code.toShort().toString(radix = 16)} at index $j")
       }
       i++
     }
@@ -400,13 +388,18 @@ public object Utf8 {
         return toCodePoint(c1, c2)
       }
     }
-    return c1.toInt()
+    return c1.code
   }
 
-  private fun isSurrogatePair(high: Char, low: Char) = high.isHighSurrogate() and low.isLowSurrogate()
+  private fun isSurrogatePair(high: Char, low: Char) =
+    high.isHighSurrogate() and low.isLowSurrogate()
 
-  private fun toCodePoint(high: Char, low: Char): Int = (high.toInt() shl 10) + low.toInt() +
-    (MIN_SUPPLEMENTARY_CODE_POINT - (Char.MIN_HIGH_SURROGATE.toInt() shl 10) - Char.MIN_LOW_SURROGATE.toInt())
+  private fun toCodePoint(high: Char, low: Char): Int =
+    (high.code shl 10) +
+      low.code +
+      (MIN_SUPPLEMENTARY_CODE_POINT -
+        (Char.MIN_HIGH_SURROGATE.code shl 10) -
+        Char.MIN_LOW_SURROGATE.code)
 
   private fun errorSurrogate(i: Int, utf16Length: Int): Unit =
     error("Unpaired surrogate at index $i of $utf16Length length")

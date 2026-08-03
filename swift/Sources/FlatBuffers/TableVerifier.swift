@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc. All rights reserved.
+ * Copyright 2024 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-#if !os(WASI)
 import Foundation
-#else
-import SwiftOverlayShims
-#endif
 
 /// `TableVerifier` verifies a table object is within a provided memory.
 /// It checks if all the objects for a specific generated table, are within
@@ -139,10 +135,12 @@ public struct TableVerifier {
     {
       /// verifiying that the key is within the buffer
       try T.T.verify(&_verifier, at: _key, of: T.T.self)
-      guard let _enum = try T.init(value: _verifier._buffer.read(
-        def: T.T.self,
-        position: _key)) else
-      {
+      guard
+        let _enum = try T.init(
+          value: _verifier._buffer.read(
+            def: T.T.self,
+            position: _key))
+      else {
         throw FlatbuffersErrors.unknownUnionCase
       }
       /// we are assuming that Unions will always be of type Uint8

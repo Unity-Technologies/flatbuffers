@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc. All rights reserved.
+ * Copyright 2024 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-#if !os(WASI)
 import Foundation
-#else
-import SwiftOverlayShims
-#endif
 
 /// NativeStruct is a protocol that indicates if the struct is a native `swift` struct
 /// since now we will be serializing native structs into the buffer.
@@ -37,8 +33,17 @@ public protocol FlatbufferObjectFromByteBuffer {
   static func fromByteBuffer(_ bb: ByteBuffer) -> Self
 }
 
-/// FlatbufferObject structures all the Flatbuffers objects
-public protocol FlatBufferObject: FlatbuffersInitializable {
+/// FlatbufferTabke structures all the Flatbuffers tables
+public protocol FlatBufferTable: FlatbuffersInitializable,
+  FlatbuffersVectorInitializable
+{
+  var __buffer: ByteBuffer! { get }
+}
+
+/// FlatbufferStruct structures all the Flatbuffers structs
+public protocol FlatBufferStruct: FlatbuffersInitializable,
+  FlatbuffersVectorInitializable
+{
   var __buffer: ByteBuffer! { get }
 }
 
@@ -69,5 +74,5 @@ public protocol ObjectAPIPacker {
   static func pack(_ builder: inout FlatBufferBuilder, obj: inout T) -> Offset
 
   /// ``unpack()`` unpacks a ``FlatBuffers`` object into a Native swift object.
-  mutating func unpack() -> T
+  func unpack() -> T
 }

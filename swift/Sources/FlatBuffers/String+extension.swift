@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc. All rights reserved.
+ * Copyright 2024 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-#if !os(WASI)
 import Foundation
-#else
-import SwiftOverlayShims
-#endif
 
 extension String: Verifiable {
 
@@ -45,9 +41,10 @@ extension String: Verifiable {
         end: verifier.capacity)
     }
 
-    let isNullTerminated = verifier._buffer.read(
-      def: UInt8.self,
-      position: stringLen) == 0
+    let isNullTerminated =
+      verifier._buffer.read(
+        def: UInt8.self,
+        position: stringLen) == 0
 
     if !verifier._options._ignoreMissingNullTerminators && !isNullTerminated {
       let str = verifier._buffer.readString(at: range.start, count: range.count)
@@ -67,9 +64,10 @@ extension String: FlatbuffersInitializable {
   public init(_ bb: ByteBuffer, o: Int32) {
     let v = Int(o)
     let count = bb.read(def: Int32.self, position: v)
-    self = bb.readString(
-      at: MemoryLayout<Int32>.size + v,
-      count: Int(count)) ?? ""
+    self =
+      bb.readString(
+        at: MemoryLayout<Int32>.size &+ v,
+        count: Int(count)) ?? ""
   }
 }
 
@@ -90,7 +88,7 @@ extension String: ObjectAPIPacker {
     builder.create(string: obj)
   }
 
-  public mutating func unpack() -> String {
+  public func unpack() -> String {
     self
   }
 

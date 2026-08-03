@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include "idl_gen_lobster.h"
+
 #include <string>
 #include <unordered_set>
 
@@ -27,42 +29,44 @@ namespace lobster {
 
 class LobsterGenerator : public BaseGenerator {
  public:
-  LobsterGenerator(const Parser &parser, const std::string &path,
-                   const std::string &file_name)
-      : BaseGenerator(parser, path, file_name, "" /* not used */, "_",
+  LobsterGenerator(const Parser& parser, const std::string& path,
+                   const std::string& file_name)
+      : BaseGenerator(parser, path, file_name, "" /* not used */, ".",
                       "lobster") {
-    static const char *const keywords[] = {
-      "nil",    "true",    "false",     "return",  "struct",    "class",
-      "import", "int",     "float",     "string",  "any",       "def",
-      "is",     "from",    "program",   "private", "coroutine", "resource",
-      "enum",   "typeof",  "var",       "let",     "pakfile",   "switch",
-      "case",   "default", "namespace", "not",     "and",       "or",
-      "bool",
+    static const char* const keywords[] = {
+        "nil",    "true",    "false",     "return",  "struct",    "class",
+        "import", "int",     "float",     "string",  "any",       "def",
+        "is",     "from",    "program",   "private", "coroutine", "resource",
+        "enum",   "typeof",  "var",       "let",     "pakfile",   "switch",
+        "case",   "default", "namespace", "not",     "and",       "or",
+        "bool",
     };
     keywords_.insert(std::begin(keywords), std::end(keywords));
   }
 
-  std::string EscapeKeyword(const std::string &name) const {
+  std::string EscapeKeyword(const std::string& name) const {
     return keywords_.find(name) == keywords_.end() ? name : name + "_";
   }
 
-  std::string NormalizedName(const Definition &definition) const {
+  std::string NormalizedName(const Definition& definition) const {
     return EscapeKeyword(definition.name);
   }
 
-  std::string NormalizedName(const EnumVal &ev) const {
+  std::string NormalizedName(const EnumVal& ev) const {
     return EscapeKeyword(ev.name);
   }
 
-  std::string NamespacedName(const Definition &def) {
+  std::string NamespacedName(const Definition& def) {
     return WrapInNameSpace(def.defined_namespace, NormalizedName(def));
   }
 
-  std::string GenTypeName(const Type &type) {
+  std::string GenTypeName(const Type& type) {
     auto bits = NumToString(SizeOf(type.base_type) * 8);
     if (IsInteger(type.base_type)) {
-      if (IsUnsigned(type.base_type)) return "uint" + bits;
-      else return "int" + bits;
+      if (IsUnsigned(type.base_type))
+        return "uint" + bits;
+      else
+        return "int" + bits;
     }
     if (IsFloat(type.base_type)) return "float" + bits;
     if (IsString(type)) return "string";
@@ -70,25 +74,25 @@ class LobsterGenerator : public BaseGenerator {
     return "none";
   }
 
-  std::string LobsterType(const Type &type) {
+  std::string LobsterType(const Type& type) {
     if (IsFloat(type.base_type)) return "float";
     if (IsBool(type.base_type)) return "bool";
     if (IsScalar(type.base_type) && type.enum_def)
       return NormalizedName(*type.enum_def);
-    if (!IsScalar(type.base_type)) return "flatbuffers_offset";
+    if (!IsScalar(type.base_type)) return "flatbuffers.offset";
     if (IsString(type)) return "string";
     return "int";
   }
 
   // Returns the method name for use with add/put calls.
-  std::string GenMethod(const Type &type) {
+  std::string GenMethod(const Type& type) {
     return IsScalar(type.base_type)
                ? ConvertCase(GenTypeBasic(type), Case::kUpperCamel)
                : (IsStruct(type) ? "Struct" : "UOffsetTRelative");
   }
 
   // This uses Python names for now..
-  std::string GenTypeBasic(const Type &type) {
+  std::string GenTypeBasic(const Type& type) {
     // clang-format off
     static const char *ctypename[] = {
       #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
@@ -102,10 +106,10 @@ class LobsterGenerator : public BaseGenerator {
   }
 
   // Generate a struct field, conditioned on its child type(s).
-  void GenStructAccessor(const StructDef &struct_def, const FieldDef &field,
-                         std::string *code_ptr) {
+  void GenStructAccessor(const StructDef& struct_def, const FieldDef& field,
+                         std::string* code_ptr) {
     GenComment(field.doc_comment, code_ptr, nullptr, "    ");
-    std::string &code = *code_ptr;
+    std::string& code = *code_ptr;
     auto offsets = NumToString(field.value.offset);
     auto def = "    def " + NormalizedName(field);
     if (IsScalar(field.value.type.base_type)) {
@@ -115,19 +119,22 @@ class LobsterGenerator : public BaseGenerator {
               offsets + ")";
 
       } else {
-        auto defval = field.IsOptional() ? "0" : field.value.constant;
-        acc = "buf_.flatbuffers_field_" + GenTypeName(field.value.type) +
-              "(pos_, " + offsets + ", " + defval + ")";
-        if (IsBool(field.value.type.base_type))
-          acc = "bool(" + acc + ")";
+        auto defval = field.IsOptional()
+                          ? (IsFloat(field.value.type.base_type) ? "0.0" : "0")
+                          : field.value.constant;
+        acc = "flatbuffers.field_" + GenTypeName(field.value.type) +
+              "(buf_, pos_, " + offsets + ", " + defval + ")";
+        if (IsBool(field.value.type.base_type)) acc = "bool(" + acc + ")";
       }
       if (field.value.type.enum_def)
         acc = NormalizedName(*field.value.type.enum_def) + "(" + acc + ")";
       if (field.IsOptional()) {
-        acc += ", buf_.flatbuffers_field_present(pos_, " + offsets + ")";
-        code += def + "() -> " + LobsterType(field.value.type) + ", bool:\n        return " + acc + "\n";
+        acc += ", flatbuffers.field_present(buf_, pos_, " + offsets + ")";
+        code += def + "() -> " + LobsterType(field.value.type) +
+                ", bool:\n        return " + acc + "\n";
       } else {
-        code += def + "() -> " + LobsterType(field.value.type) + ":\n        return " + acc + "\n";
+        code += def + "() -> " + LobsterType(field.value.type) +
+                ":\n        return " + acc + "\n";
       }
       return;
     }
@@ -138,39 +145,49 @@ class LobsterGenerator : public BaseGenerator {
           code += def + "() -> " + name + ":\n        ";
           code += "return " + name + "{ buf_, pos_ + " + offsets + " }\n";
         } else {
-          code += def + "() -> " + name + "?:\n        ";
-          code += std::string("let o = buf_.flatbuffers_field_") +
+          code += def + "() -> " + name;
+          if (!field.IsRequired()) code += "?";
+          code += ":\n        ";
+          code += std::string("let o = flatbuffers.field_") +
                   (field.value.type.struct_def->fixed ? "struct" : "table") +
-                  "(pos_, " + offsets + ")\n        return if o: " + name +
-                  " { buf_, o } else: nil\n";
+                  "(buf_, pos_, " + offsets + ")\n        return ";
+          if (field.IsRequired()) {
+            code += name + " { buf_, assert o }\n";
+          } else {
+            code += "if o: " + name + " { buf_, o } else: nil\n";
+          }
         }
         break;
       }
       case BASE_TYPE_STRING:
         code += def +
-                "() -> string:\n        return buf_.flatbuffers_field_string(pos_, " +
+                "() -> string:\n        return "
+                "flatbuffers.field_string(buf_, pos_, " +
                 offsets + ")\n";
         break;
       case BASE_TYPE_VECTOR: {
         auto vectortype = field.value.type.VectorType();
         if (vectortype.base_type == BASE_TYPE_STRUCT) {
-          auto start = "buf_.flatbuffers_field_vector(pos_, " + offsets +
+          auto start = "flatbuffers.field_vector(buf_, pos_, " + offsets +
                        ") + i * " + NumToString(InlineSize(vectortype));
           if (!(vectortype.struct_def->fixed)) {
-            start = "buf_.flatbuffers_indirect(" + start + ")";
+            start = "flatbuffers.indirect(buf_, " + start + ")";
           }
-          code += def + "(i:int) -> " + NamespacedName(*field.value.type.struct_def) + ":\n        return ";
+          code += def + "(i:int) -> " +
+                  NamespacedName(*field.value.type.struct_def) +
+                  ":\n        return ";
           code += NamespacedName(*field.value.type.struct_def) + " { buf_, " +
                   start + " }\n";
         } else {
           if (IsString(vectortype)) {
             code += def + "(i:int) -> string:\n        return ";
-            code += "buf_.flatbuffers_string";
+            code += "flatbuffers.string";
           } else {
-            code += def + "(i:int) -> " + LobsterType(vectortype) + ":\n        return ";
-            code += "buf_.read_" + GenTypeName(vectortype) + "_le";
+            code += def + "(i:int) -> " + LobsterType(vectortype) +
+                    ":\n        return ";
+            code += "read_" + GenTypeName(vectortype) + "_le";
           }
-          code += "(buf_.flatbuffers_field_vector(pos_, " + offsets +
+          code += "(buf_, buf_.flatbuffers.field_vector(pos_, " + offsets +
                   ") + i * " + NumToString(InlineSize(vectortype)) + ")\n";
         }
         break;
@@ -178,37 +195,38 @@ class LobsterGenerator : public BaseGenerator {
       case BASE_TYPE_UNION: {
         for (auto it = field.value.type.enum_def->Vals().begin();
              it != field.value.type.enum_def->Vals().end(); ++it) {
-          auto &ev = **it;
+          auto& ev = **it;
           if (ev.IsNonZero()) {
             code += def + "_as_" + ev.name + "():\n        return " +
                     NamespacedName(*ev.union_type.struct_def) +
-                    " { buf_, buf_.flatbuffers_field_table(pos_, " + offsets +
+                    " { buf_, flatbuffers.field_table(buf_, pos_, " + offsets +
                     ") }\n";
           }
         }
         break;
       }
-      default: FLATBUFFERS_ASSERT(0);
+      default:
+        FLATBUFFERS_ASSERT(0);
     }
     if (IsVector(field.value.type)) {
       code += def +
               "_length() -> int:\n        return "
-              "buf_.flatbuffers_field_vector_len(pos_, " +
+              "flatbuffers.field_vector_len(buf_, pos_, " +
               offsets + ")\n";
     }
   }
 
   // Generate table constructors, conditioned on its members' types.
-  void GenTableBuilders(const StructDef &struct_def, std::string *code_ptr) {
-    std::string &code = *code_ptr;
+  void GenTableBuilders(const StructDef& struct_def, std::string* code_ptr) {
+    std::string& code = *code_ptr;
     code += "struct " + NormalizedName(struct_def) +
-            "Builder:\n    b_:flatbuffers_builder\n";
+            "Builder:\n    b_:flatbuffers.builder\n";
     code += "    def start():\n        b_.StartObject(" +
             NumToString(struct_def.fields.vec.size()) +
             ")\n        return this\n";
     for (auto it = struct_def.fields.vec.begin();
          it != struct_def.fields.vec.end(); ++it) {
-      auto &field = **it;
+      auto& field = **it;
       if (field.deprecated) continue;
       auto offset = it - struct_def.fields.vec.begin();
       code += "    def add_" + NormalizedName(field) + "(" +
@@ -222,12 +240,12 @@ class LobsterGenerator : public BaseGenerator {
     code += "    def end():\n        return b_.EndObject()\n\n";
     for (auto it = struct_def.fields.vec.begin();
          it != struct_def.fields.vec.end(); ++it) {
-      auto &field = **it;
+      auto& field = **it;
       if (field.deprecated) continue;
       if (IsVector(field.value.type)) {
         code += "def " + NormalizedName(struct_def) + "Start" +
                 ConvertCase(NormalizedName(field), Case::kUpperCamel) +
-                "Vector(b_:flatbuffers_builder, n_:int):\n    b_.StartVector(";
+                "Vector(b_:flatbuffers.builder, n_:int):\n    b_.StartVector(";
         auto vector_type = field.value.type.VectorType();
         auto alignment = InlineAlignment(vector_type);
         auto elem_size = InlineSize(vector_type);
@@ -237,7 +255,7 @@ class LobsterGenerator : public BaseGenerator {
             !vector_type.struct_def->fixed) {
           code += "def " + NormalizedName(struct_def) + "Create" +
                   ConvertCase(NormalizedName(field), Case::kUpperCamel) +
-                  "Vector(b_:flatbuffers_builder, v_:[" +
+                  "Vector(b_:flatbuffers.builder, v_:[" +
                   LobsterType(vector_type) + "]):\n    b_.StartVector(" +
                   NumToString(elem_size) + ", v_.length, " +
                   NumToString(alignment) + ")\n    reverse(v_) e_: b_.Prepend" +
@@ -249,23 +267,23 @@ class LobsterGenerator : public BaseGenerator {
     }
   }
 
-  void GenStructPreDecl(const StructDef &struct_def, std::string *code_ptr) {
+  void GenStructPreDecl(const StructDef& struct_def, std::string* code_ptr) {
     if (struct_def.generated) return;
-    std::string &code = *code_ptr;
+    std::string& code = *code_ptr;
     CheckNameSpace(struct_def, &code);
     code += "class " + NormalizedName(struct_def) + "\n\n";
   }
 
   // Generate struct or table methods.
-  void GenStruct(const StructDef &struct_def, std::string *code_ptr) {
+  void GenStruct(const StructDef& struct_def, std::string* code_ptr) {
     if (struct_def.generated) return;
-    std::string &code = *code_ptr;
+    std::string& code = *code_ptr;
     CheckNameSpace(struct_def, &code);
     GenComment(struct_def.doc_comment, code_ptr, nullptr, "");
-    code += "class " + NormalizedName(struct_def) + " : flatbuffers_handle\n";
+    code += "class " + NormalizedName(struct_def) + " : flatbuffers.handle\n";
     for (auto it = struct_def.fields.vec.begin();
          it != struct_def.fields.vec.end(); ++it) {
-      auto &field = **it;
+      auto& field = **it;
       if (field.deprecated) continue;
       GenStructAccessor(struct_def, field, code_ptr);
     }
@@ -275,7 +293,7 @@ class LobsterGenerator : public BaseGenerator {
       // the root type.
       code += "def GetRootAs" + NormalizedName(struct_def) +
               "(buf:string): return " + NormalizedName(struct_def) +
-              " { buf, buf.flatbuffers_indirect(0) }\n\n";
+              " { buf, flatbuffers.indirect(buf, 0) }\n\n";
     }
     if (struct_def.fixed) {
       // create a struct constructor function
@@ -287,14 +305,14 @@ class LobsterGenerator : public BaseGenerator {
   }
 
   // Generate enum declarations.
-  void GenEnum(const EnumDef &enum_def, std::string *code_ptr) {
+  void GenEnum(const EnumDef& enum_def, std::string* code_ptr) {
     if (enum_def.generated) return;
-    std::string &code = *code_ptr;
+    std::string& code = *code_ptr;
     CheckNameSpace(enum_def, &code);
     GenComment(enum_def.doc_comment, code_ptr, nullptr, "");
     code += "enum " + NormalizedName(enum_def) + ":\n";
     for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
-      auto &ev = **it;
+      auto& ev = **it;
       GenComment(ev.doc_comment, code_ptr, nullptr, "    ");
       code += "    " + enum_def.name + "_" + NormalizedName(ev) + " = " +
               enum_def.ToString(ev) + "\n";
@@ -304,11 +322,11 @@ class LobsterGenerator : public BaseGenerator {
 
   // Recursively generate arguments for a constructor, to deal with nested
   // structs.
-  void StructBuilderArgs(const StructDef &struct_def, const char *nameprefix,
-                         std::string *code_ptr) {
+  void StructBuilderArgs(const StructDef& struct_def, const char* nameprefix,
+                         std::string* code_ptr) {
     for (auto it = struct_def.fields.vec.begin();
          it != struct_def.fields.vec.end(); ++it) {
-      auto &field = **it;
+      auto& field = **it;
       if (IsStruct(field.value.type)) {
         // Generate arguments for a struct inside a struct. To ensure names
         // don't clash, and to make it obvious these arguments are constructing
@@ -317,7 +335,7 @@ class LobsterGenerator : public BaseGenerator {
                           (nameprefix + (NormalizedName(field) + "_")).c_str(),
                           code_ptr);
       } else {
-        std::string &code = *code_ptr;
+        std::string& code = *code_ptr;
         code += ", " + (nameprefix + NormalizedName(field)) + ":" +
                 LobsterType(field.value.type);
       }
@@ -326,14 +344,14 @@ class LobsterGenerator : public BaseGenerator {
 
   // Recursively generate struct construction statements and instert manual
   // padding.
-  void StructBuilderBody(const StructDef &struct_def, const char *nameprefix,
-                         std::string *code_ptr) {
-    std::string &code = *code_ptr;
+  void StructBuilderBody(const StructDef& struct_def, const char* nameprefix,
+                         std::string* code_ptr) {
+    std::string& code = *code_ptr;
     code += "    b_.Prep(" + NumToString(struct_def.minalign) + ", " +
             NumToString(struct_def.bytesize) + ")\n";
     for (auto it = struct_def.fields.vec.rbegin();
          it != struct_def.fields.vec.rend(); ++it) {
-      auto &field = **it;
+      auto& field = **it;
       if (field.padding)
         code += "    b_.Pad(" + NumToString(field.padding) + ")\n";
       if (IsStruct(field.value.type)) {
@@ -348,21 +366,21 @@ class LobsterGenerator : public BaseGenerator {
   }
 
   // Create a struct with a builder and the struct's arguments.
-  void GenStructBuilder(const StructDef &struct_def, std::string *code_ptr) {
-    std::string &code = *code_ptr;
+  void GenStructBuilder(const StructDef& struct_def, std::string* code_ptr) {
+    std::string& code = *code_ptr;
     code +=
-        "def Create" + NormalizedName(struct_def) + "(b_:flatbuffers_builder";
+        "def Create" + NormalizedName(struct_def) + "(b_:flatbuffers.builder";
     StructBuilderArgs(struct_def, "", code_ptr);
     code += "):\n";
     StructBuilderBody(struct_def, "", code_ptr);
     code += "    return b_.Offset()\n\n";
   }
 
-  void CheckNameSpace(const Definition &def, std::string *code_ptr) {
+  void CheckNameSpace(const Definition& def, std::string* code_ptr) {
     auto ns = GetNameSpace(def);
     if (ns == current_namespace_) return;
     current_namespace_ = ns;
-    std::string &code = *code_ptr;
+    std::string& code = *code_ptr;
     code += "namespace " + ns + "\n\n";
   }
 
@@ -372,21 +390,22 @@ class LobsterGenerator : public BaseGenerator {
             "\nimport flatbuffers\n\n";
     for (auto it = parser_.enums_.vec.begin(); it != parser_.enums_.vec.end();
          ++it) {
-      auto &enum_def = **it;
+      auto& enum_def = **it;
       GenEnum(enum_def, &code);
     }
     for (auto it = parser_.structs_.vec.begin();
          it != parser_.structs_.vec.end(); ++it) {
-      auto &struct_def = **it;
+      auto& struct_def = **it;
       GenStructPreDecl(struct_def, &code);
     }
     for (auto it = parser_.structs_.vec.begin();
          it != parser_.structs_.vec.end(); ++it) {
-      auto &struct_def = **it;
+      auto& struct_def = **it;
       GenStruct(struct_def, &code);
     }
-    return SaveFile(GeneratedFileName(path_, file_name_, parser_.opts).c_str(),
-                    code, false);
+    return parser_.opts.file_saver->SaveFile(
+        GeneratedFileName(path_, file_name_, parser_.opts).c_str(), code,
+        false);
   }
 
  private:
@@ -396,10 +415,69 @@ class LobsterGenerator : public BaseGenerator {
 
 }  // namespace lobster
 
-bool GenerateLobster(const Parser &parser, const std::string &path,
-                     const std::string &file_name) {
+static bool GenerateLobster(const Parser& parser, const std::string& path,
+                            const std::string& file_name) {
   lobster::LobsterGenerator generator(parser, path, file_name);
   return generator.generate();
+}
+
+namespace {
+
+class LobsterCodeGenerator : public CodeGenerator {
+ public:
+  Status GenerateCode(const Parser& parser, const std::string& path,
+                      const std::string& filename) override {
+    if (!GenerateLobster(parser, path, filename)) {
+      return Status::ERROR;
+    }
+    return Status::OK;
+  }
+
+  Status GenerateCode(const uint8_t*, int64_t, const CodeGenOptions&) override {
+    return Status::NOT_IMPLEMENTED;
+  }
+
+  Status GenerateMakeRule(const Parser& parser, const std::string& path,
+                          const std::string& filename,
+                          std::string& output) override {
+    (void)parser;
+    (void)path;
+    (void)filename;
+    (void)output;
+    return Status::NOT_IMPLEMENTED;
+  }
+
+  Status GenerateGrpcCode(const Parser& parser, const std::string& path,
+                          const std::string& filename) override {
+    (void)parser;
+    (void)path;
+    (void)filename;
+    return Status::NOT_IMPLEMENTED;
+  }
+
+  Status GenerateRootFile(const Parser& parser,
+                          const std::string& path) override {
+    (void)parser;
+    (void)path;
+    return Status::NOT_IMPLEMENTED;
+  }
+
+  bool IsSchemaOnly() const override { return true; }
+
+  bool SupportsBfbsGeneration() const override { return false; }
+
+  bool SupportsRootFileGeneration() const override { return false; }
+
+  IDLOptions::Language Language() const override {
+    return IDLOptions::kLobster;
+  }
+
+  std::string LanguageName() const override { return "Lobster"; }
+};
+}  // namespace
+
+std::unique_ptr<CodeGenerator> NewLobsterCodeGenerator() {
+  return std::unique_ptr<LobsterCodeGenerator>(new LobsterCodeGenerator());
 }
 
 }  // namespace flatbuffers

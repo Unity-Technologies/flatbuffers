@@ -14,10 +14,11 @@ public struct Monster : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_22_10_26(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_12_19(); }
   public static Monster GetRootAsMonster(ByteBuffer _bb) { return GetRootAsMonster(_bb, new Monster()); }
   public static Monster GetRootAsMonster(ByteBuffer _bb, Monster obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public static bool MonsterBufferHasIdentifier(ByteBuffer _bb) { return Table.__has_identifier(_bb, "MONS"); }
+  public static bool VerifyMonster(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("MONS", false, MonsterVerify.Verify); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Monster __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
@@ -215,6 +216,22 @@ public struct Monster : IFlatbufferObject
   public bool MutateLongEnumNonEnumDefault(MyGame.Example.LongEnum long_enum_non_enum_default) { int o = __p.__offset(108); if (o != 0) { __p.bb.PutUlong(o + __p.bb_pos, (ulong)long_enum_non_enum_default); return true; } else { return false; } }
   public MyGame.Example.LongEnum LongEnumNormalDefault { get { int o = __p.__offset(110); return o != 0 ? (MyGame.Example.LongEnum)__p.bb.GetUlong(o + __p.bb_pos) : MyGame.Example.LongEnum.LongOne; } }
   public bool MutateLongEnumNormalDefault(MyGame.Example.LongEnum long_enum_normal_default) { int o = __p.__offset(110); if (o != 0) { __p.bb.PutUlong(o + __p.bb_pos, (ulong)long_enum_normal_default); return true; } else { return false; } }
+  public float NanDefault { get { int o = __p.__offset(112); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)Single.NaN; } }
+  public bool MutateNanDefault(float nan_default) { int o = __p.__offset(112); if (o != 0) { __p.bb.PutFloat(o + __p.bb_pos, nan_default); return true; } else { return false; } }
+  public float InfDefault { get { int o = __p.__offset(114); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)Single.PositiveInfinity; } }
+  public bool MutateInfDefault(float inf_default) { int o = __p.__offset(114); if (o != 0) { __p.bb.PutFloat(o + __p.bb_pos, inf_default); return true; } else { return false; } }
+  public float PositiveInfDefault { get { int o = __p.__offset(116); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)Single.PositiveInfinity; } }
+  public bool MutatePositiveInfDefault(float positive_inf_default) { int o = __p.__offset(116); if (o != 0) { __p.bb.PutFloat(o + __p.bb_pos, positive_inf_default); return true; } else { return false; } }
+  public float InfinityDefault { get { int o = __p.__offset(118); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)Single.PositiveInfinity; } }
+  public bool MutateInfinityDefault(float infinity_default) { int o = __p.__offset(118); if (o != 0) { __p.bb.PutFloat(o + __p.bb_pos, infinity_default); return true; } else { return false; } }
+  public float PositiveInfinityDefault { get { int o = __p.__offset(120); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)Single.PositiveInfinity; } }
+  public bool MutatePositiveInfinityDefault(float positive_infinity_default) { int o = __p.__offset(120); if (o != 0) { __p.bb.PutFloat(o + __p.bb_pos, positive_infinity_default); return true; } else { return false; } }
+  public float NegativeInfDefault { get { int o = __p.__offset(122); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)Single.NegativeInfinity; } }
+  public bool MutateNegativeInfDefault(float negative_inf_default) { int o = __p.__offset(122); if (o != 0) { __p.bb.PutFloat(o + __p.bb_pos, negative_inf_default); return true; } else { return false; } }
+  public float NegativeInfinityDefault { get { int o = __p.__offset(124); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)Single.NegativeInfinity; } }
+  public bool MutateNegativeInfinityDefault(float negative_infinity_default) { int o = __p.__offset(124); if (o != 0) { __p.bb.PutFloat(o + __p.bb_pos, negative_infinity_default); return true; } else { return false; } }
+  public double DoubleInfDefault { get { int o = __p.__offset(126); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)Double.PositiveInfinity; } }
+  public bool MutateDoubleInfDefault(double double_inf_default) { int o = __p.__offset(126); if (o != 0) { __p.bb.PutDouble(o + __p.bb_pos, double_inf_default); return true; } else { return false; } }
 
   public static Offset<MyGame.Example.Monster> CreateMonster(FlatBufferBuilder builder,
       MyGame.Example.Vec3T pos = null,
@@ -269,8 +286,17 @@ public struct Monster : IFlatbufferObject
       VectorOffset scalar_key_sorted_tablesOffset = default(VectorOffset),
       MyGame.Example.TestT native_inline = null,
       MyGame.Example.LongEnum long_enum_non_enum_default = 0,
-      MyGame.Example.LongEnum long_enum_normal_default = MyGame.Example.LongEnum.LongOne) {
-    builder.StartTable(54);
+      MyGame.Example.LongEnum long_enum_normal_default = MyGame.Example.LongEnum.LongOne,
+      float nan_default = Single.NaN,
+      float inf_default = Single.PositiveInfinity,
+      float positive_inf_default = Single.PositiveInfinity,
+      float infinity_default = Single.PositiveInfinity,
+      float positive_infinity_default = Single.PositiveInfinity,
+      float negative_inf_default = Single.NegativeInfinity,
+      float negative_infinity_default = Single.NegativeInfinity,
+      double double_inf_default = Double.PositiveInfinity) {
+    builder.StartTable(62);
+    Monster.AddDoubleInfDefault(builder, double_inf_default);
     Monster.AddLongEnumNormalDefault(builder, long_enum_normal_default);
     Monster.AddLongEnumNonEnumDefault(builder, long_enum_non_enum_default);
     Monster.AddNonOwningReference(builder, non_owning_reference);
@@ -280,6 +306,13 @@ public struct Monster : IFlatbufferObject
     Monster.AddTesthashs64Fnv1a(builder, testhashs64_fnv1a);
     Monster.AddTesthashu64Fnv1(builder, testhashu64_fnv1);
     Monster.AddTesthashs64Fnv1(builder, testhashs64_fnv1);
+    Monster.AddNegativeInfinityDefault(builder, negative_infinity_default);
+    Monster.AddNegativeInfDefault(builder, negative_inf_default);
+    Monster.AddPositiveInfinityDefault(builder, positive_infinity_default);
+    Monster.AddInfinityDefault(builder, infinity_default);
+    Monster.AddPositiveInfDefault(builder, positive_inf_default);
+    Monster.AddInfDefault(builder, inf_default);
+    Monster.AddNanDefault(builder, nan_default);
     Monster.AddNativeInline(builder, MyGame.Example.Test.Pack(builder, native_inline));
     Monster.AddScalarKeySortedTables(builder, scalar_key_sorted_tablesOffset);
     Monster.AddTestrequirednestedflatbuffer(builder, testrequirednestedflatbufferOffset);
@@ -327,7 +360,7 @@ public struct Monster : IFlatbufferObject
     return Monster.EndMonster(builder);
   }
 
-  public static void StartMonster(FlatBufferBuilder builder) { builder.StartTable(54); }
+  public static void StartMonster(FlatBufferBuilder builder) { builder.StartTable(62); }
   public static void AddPos(FlatBufferBuilder builder, Offset<MyGame.Example.Vec3> posOffset) { builder.AddStruct(0, posOffset.Value, 0); }
   public static void AddMana(FlatBufferBuilder builder, short mana) { builder.AddShort(1, mana, 150); }
   public static void AddHp(FlatBufferBuilder builder, short hp) { builder.AddShort(2, hp, 100); }
@@ -469,6 +502,14 @@ public struct Monster : IFlatbufferObject
   public static void AddNativeInline(FlatBufferBuilder builder, Offset<MyGame.Example.Test> nativeInlineOffset) { builder.AddStruct(51, nativeInlineOffset.Value, 0); }
   public static void AddLongEnumNonEnumDefault(FlatBufferBuilder builder, MyGame.Example.LongEnum longEnumNonEnumDefault) { builder.AddUlong(52, (ulong)longEnumNonEnumDefault, 0); }
   public static void AddLongEnumNormalDefault(FlatBufferBuilder builder, MyGame.Example.LongEnum longEnumNormalDefault) { builder.AddUlong(53, (ulong)longEnumNormalDefault, 2); }
+  public static void AddNanDefault(FlatBufferBuilder builder, float nanDefault) { builder.AddFloat(54, nanDefault, Single.NaN); }
+  public static void AddInfDefault(FlatBufferBuilder builder, float infDefault) { builder.AddFloat(55, infDefault, Single.PositiveInfinity); }
+  public static void AddPositiveInfDefault(FlatBufferBuilder builder, float positiveInfDefault) { builder.AddFloat(56, positiveInfDefault, Single.PositiveInfinity); }
+  public static void AddInfinityDefault(FlatBufferBuilder builder, float infinityDefault) { builder.AddFloat(57, infinityDefault, Single.PositiveInfinity); }
+  public static void AddPositiveInfinityDefault(FlatBufferBuilder builder, float positiveInfinityDefault) { builder.AddFloat(58, positiveInfinityDefault, Single.PositiveInfinity); }
+  public static void AddNegativeInfDefault(FlatBufferBuilder builder, float negativeInfDefault) { builder.AddFloat(59, negativeInfDefault, Single.NegativeInfinity); }
+  public static void AddNegativeInfinityDefault(FlatBufferBuilder builder, float negativeInfinityDefault) { builder.AddFloat(60, negativeInfinityDefault, Single.NegativeInfinity); }
+  public static void AddDoubleInfDefault(FlatBufferBuilder builder, double doubleInfDefault) { builder.AddDouble(61, doubleInfDefault, Double.PositiveInfinity); }
   public static Offset<MyGame.Example.Monster> EndMonster(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     builder.Required(o, 10);  // name
@@ -480,7 +521,7 @@ public struct Monster : IFlatbufferObject
   public static VectorOffset CreateSortedVectorOfMonster(FlatBufferBuilder builder, Offset<Monster>[] offsets) {
     Array.Sort(offsets,
       (Offset<Monster> o1, Offset<Monster> o2) =>
-        new Monster().__assign(builder.DataBuffer.Length - o1.Value, builder.DataBuffer).Name.CompareTo(new Monster().__assign(builder.DataBuffer.Length - o2.Value, builder.DataBuffer).Name));
+        string.CompareOrdinal(new Monster().__assign(builder.DataBuffer.Length - o1.Value, builder.DataBuffer).Name, new Monster().__assign(builder.DataBuffer.Length - o2.Value, builder.DataBuffer).Name));
     return builder.CreateVectorOfTables(offsets);
   }
 
@@ -492,7 +533,7 @@ public struct Monster : IFlatbufferObject
       int middle = span / 2;
       int tableOffset = Table.__indirect(vectorLocation + 4 * (start + middle), bb);
       obj_.__assign(tableOffset, bb);
-      int comp = obj_.Name.CompareTo(key);
+      int comp = string.CompareOrdinal(obj_.Name, key);
       if (comp > 0) {
         span = middle;
       } else if (comp < 0) {
@@ -620,6 +661,14 @@ public struct Monster : IFlatbufferObject
     _o.NativeInline = this.NativeInline.HasValue ? this.NativeInline.Value.UnPack() : null;
     _o.LongEnumNonEnumDefault = this.LongEnumNonEnumDefault;
     _o.LongEnumNormalDefault = this.LongEnumNormalDefault;
+    _o.NanDefault = this.NanDefault;
+    _o.InfDefault = this.InfDefault;
+    _o.PositiveInfDefault = this.PositiveInfDefault;
+    _o.InfinityDefault = this.InfinityDefault;
+    _o.PositiveInfinityDefault = this.PositiveInfinityDefault;
+    _o.NegativeInfDefault = this.NegativeInfDefault;
+    _o.NegativeInfinityDefault = this.NegativeInfinityDefault;
+    _o.DoubleInfDefault = this.DoubleInfDefault;
   }
   public static Offset<MyGame.Example.Monster> Pack(FlatBufferBuilder builder, MonsterT _o) {
     if (_o == null) return default(Offset<MyGame.Example.Monster>);
@@ -796,7 +845,15 @@ public struct Monster : IFlatbufferObject
       _scalar_key_sorted_tables,
       _o.NativeInline,
       _o.LongEnumNonEnumDefault,
-      _o.LongEnumNormalDefault);
+      _o.LongEnumNormalDefault,
+      _o.NanDefault,
+      _o.InfDefault,
+      _o.PositiveInfDefault,
+      _o.InfinityDefault,
+      _o.PositiveInfinityDefault,
+      _o.NegativeInfDefault,
+      _o.NegativeInfinityDefault,
+      _o.DoubleInfDefault);
   }
 }
 
@@ -949,6 +1006,22 @@ public class MonsterT
   public MyGame.Example.LongEnum LongEnumNonEnumDefault { get; set; }
   [Newtonsoft.Json.JsonProperty("long_enum_normal_default")]
   public MyGame.Example.LongEnum LongEnumNormalDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("nan_default")]
+  public float NanDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("inf_default")]
+  public float InfDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("positive_inf_default")]
+  public float PositiveInfDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("infinity_default")]
+  public float InfinityDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("positive_infinity_default")]
+  public float PositiveInfinityDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("negative_inf_default")]
+  public float NegativeInfDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("negative_infinity_default")]
+  public float NegativeInfinityDefault { get; set; }
+  [Newtonsoft.Json.JsonProperty("double_inf_default")]
+  public double DoubleInfDefault { get; set; }
 
   public MonsterT() {
     this.Pos = new MyGame.Example.Vec3T();
@@ -1001,6 +1074,14 @@ public class MonsterT
     this.NativeInline = new MyGame.Example.TestT();
     this.LongEnumNonEnumDefault = 0;
     this.LongEnumNormalDefault = MyGame.Example.LongEnum.LongOne;
+    this.NanDefault = Single.NaN;
+    this.InfDefault = Single.PositiveInfinity;
+    this.PositiveInfDefault = Single.PositiveInfinity;
+    this.InfinityDefault = Single.PositiveInfinity;
+    this.PositiveInfinityDefault = Single.PositiveInfinity;
+    this.NegativeInfDefault = Single.NegativeInfinity;
+    this.NegativeInfinityDefault = Single.NegativeInfinity;
+    this.DoubleInfDefault = Double.PositiveInfinity;
   }
 
   public static MonsterT DeserializeFromJson(string jsonText) {
@@ -1019,5 +1100,75 @@ public class MonsterT
   }
 }
 
+
+static public class MonsterVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*Pos*/, 32 /*MyGame.Example.Vec3*/, 8, false)
+      && verifier.VerifyField(tablePos, 6 /*Mana*/, 2 /*short*/, 2, false)
+      && verifier.VerifyField(tablePos, 8 /*Hp*/, 2 /*short*/, 2, false)
+      && verifier.VerifyString(tablePos, 10 /*Name*/, true)
+      && verifier.VerifyVectorOfData(tablePos, 14 /*Inventory*/, 1 /*byte*/, false)
+      && verifier.VerifyField(tablePos, 16 /*Color*/, 1 /*MyGame.Example.Color*/, 1, false)
+      && verifier.VerifyField(tablePos, 18 /*TestType*/, 1 /*MyGame.Example.Any*/, 1, false)
+      && verifier.VerifyUnion(tablePos, 18, 20 /*Test*/, MyGame.Example.AnyVerify.Verify, false)
+      && verifier.VerifyVectorOfData(tablePos, 22 /*Test4*/, 4 /*MyGame.Example.Test*/, false)
+      && verifier.VerifyVectorOfStrings(tablePos, 24 /*Testarrayofstring*/, false)
+      && verifier.VerifyVectorOfTables(tablePos, 26 /*Testarrayoftables*/, MyGame.Example.MonsterVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 28 /*Enemy*/, MyGame.Example.MonsterVerify.Verify, false)
+      && verifier.VerifyNestedBuffer(tablePos, 30 /*Testnestedflatbuffer*/, MyGame.Example.MonsterVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 32 /*Testempty*/, MyGame.Example.StatVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 34 /*Testbool*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 36 /*Testhashs32Fnv1*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 38 /*Testhashu32Fnv1*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 40 /*Testhashs64Fnv1*/, 8 /*long*/, 8, false)
+      && verifier.VerifyField(tablePos, 42 /*Testhashu64Fnv1*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 44 /*Testhashs32Fnv1a*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 46 /*Testhashu32Fnv1a*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 48 /*Testhashs64Fnv1a*/, 8 /*long*/, 8, false)
+      && verifier.VerifyField(tablePos, 50 /*Testhashu64Fnv1a*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyVectorOfData(tablePos, 52 /*Testarrayofbools*/, 1 /*bool*/, false)
+      && verifier.VerifyField(tablePos, 54 /*Testf*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 56 /*Testf2*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 58 /*Testf3*/, 4 /*float*/, 4, false)
+      && verifier.VerifyVectorOfStrings(tablePos, 60 /*Testarrayofstring2*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 62 /*Testarrayofsortedstruct*/, 8 /*MyGame.Example.Ability*/, false)
+      && verifier.VerifyNestedBuffer(tablePos, 64 /*Flex*/, null, false)
+      && verifier.VerifyVectorOfData(tablePos, 66 /*Test5*/, 4 /*MyGame.Example.Test*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 68 /*VectorOfLongs*/, 8 /*long*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 70 /*VectorOfDoubles*/, 8 /*double*/, false)
+      && verifier.VerifyTable(tablePos, 72 /*ParentNamespaceTest*/, MyGame.InParentNamespaceVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 74 /*VectorOfReferrables*/, MyGame.Example.ReferrableVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 76 /*SingleWeakReference*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyVectorOfData(tablePos, 78 /*VectorOfWeakReferences*/, 8 /*ulong*/, false)
+      && verifier.VerifyVectorOfTables(tablePos, 80 /*VectorOfStrongReferrables*/, MyGame.Example.ReferrableVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 82 /*CoOwningReference*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyVectorOfData(tablePos, 84 /*VectorOfCoOwningReferences*/, 8 /*ulong*/, false)
+      && verifier.VerifyField(tablePos, 86 /*NonOwningReference*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyVectorOfData(tablePos, 88 /*VectorOfNonOwningReferences*/, 8 /*ulong*/, false)
+      && verifier.VerifyField(tablePos, 90 /*AnyUniqueType*/, 1 /*MyGame.Example.AnyUniqueAliases*/, 1, false)
+      && verifier.VerifyUnion(tablePos, 90, 92 /*AnyUnique*/, MyGame.Example.AnyUniqueAliasesVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 94 /*AnyAmbiguousType*/, 1 /*MyGame.Example.AnyAmbiguousAliases*/, 1, false)
+      && verifier.VerifyUnion(tablePos, 94, 96 /*AnyAmbiguous*/, MyGame.Example.AnyAmbiguousAliasesVerify.Verify, false)
+      && verifier.VerifyVectorOfData(tablePos, 98 /*VectorOfEnums*/, 1 /*MyGame.Example.Color*/, false)
+      && verifier.VerifyField(tablePos, 100 /*SignedEnum*/, 1 /*MyGame.Example.Race*/, 1, false)
+      && verifier.VerifyNestedBuffer(tablePos, 102 /*Testrequirednestedflatbuffer*/, MyGame.Example.MonsterVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 104 /*ScalarKeySortedTables*/, MyGame.Example.StatVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 106 /*NativeInline*/, 4 /*MyGame.Example.Test*/, 2, false)
+      && verifier.VerifyField(tablePos, 108 /*LongEnumNonEnumDefault*/, 8 /*MyGame.Example.LongEnum*/, 8, false)
+      && verifier.VerifyField(tablePos, 110 /*LongEnumNormalDefault*/, 8 /*MyGame.Example.LongEnum*/, 8, false)
+      && verifier.VerifyField(tablePos, 112 /*NanDefault*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 114 /*InfDefault*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 116 /*PositiveInfDefault*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 118 /*InfinityDefault*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 120 /*PositiveInfinityDefault*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 122 /*NegativeInfDefault*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 124 /*NegativeInfinityDefault*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 126 /*DoubleInfDefault*/, 8 /*double*/, 8, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc. All rights reserved.
+ * Copyright 2024 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#if !os(WASI)
 import Foundation
-#else
-import SwiftOverlayShims
+
+#if canImport(Common)
+import Common
 #endif
 
 /// Verifiable is a protocol all swift flatbuffers object should conform to,
@@ -129,7 +129,9 @@ public enum Vector<U, S>: Verifiable where U: Verifiable, S: Verifiable {
       let range = try verifyRange(&verifier, at: position, of: UOffset.self)
       for index in stride(
         from: range.start,
-        to: Int(clamping: range.start &+ range.count),
+        to: Int(
+          clamping: range
+            .start &+ (range.count &* MemoryLayout<Int32>.size)),
         by: MemoryLayout<UOffset>.size)
       {
         try U.verify(&verifier, at: index, of: U.self)
@@ -199,17 +201,19 @@ public enum UnionVector<S> where S: UnionEnum {
     while count < keysRange.count {
 
       /// index of readable enum value in array
-      let keysIndex = MemoryLayout<S.T>.size * count
-      guard let _enum = try S.init(value: verifier._buffer.read(
-        def: S.T.self,
-        position: keysRange.start + keysIndex)) else
-      {
+      let keysIndex = MemoryLayout<S.T>.size &* count
+      guard
+        let _enum = try S.init(
+          value: verifier._buffer.read(
+            def: S.T.self,
+            position: keysRange.start &+ keysIndex))
+      else {
         throw FlatbuffersErrors.unknownUnionCase
       }
       /// index of readable offset value in array
-      let fieldIndex = MemoryLayout<UOffset>.size * count
-      try completion(&verifier, _enum, offsetsRange.start + fieldIndex)
-      count += 1
+      let fieldIndex = MemoryLayout<UOffset>.size &* count
+      try completion(&verifier, _enum, offsetsRange.start &+ fieldIndex)
+      count &+= 1
     }
   }
 }
