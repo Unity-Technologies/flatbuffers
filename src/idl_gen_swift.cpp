@@ -913,8 +913,8 @@ class SwiftGenerator : public BaseGenerator {
     if (IsScalar(vectortype.base_type) && !IsEnum(vectortype) &&
         !IsBool(field.value.type.base_type)) {
       code_ +=
-          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}> { return "
-          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) ?? .init(start: nil, count: 0) }";
+          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}>? { return "
+          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) }";
       if (parser_.opts.mutable_buffer) code_ += GenMutateArray();
       GenUnsafeBufferPointer(field);
       return;
@@ -924,8 +924,8 @@ class SwiftGenerator : public BaseGenerator {
         field.value.type.struct_def->fixed) {
       // do this before we swap to mutable, we don't want the mutable version
       code_ +=
-          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}> { return "
-          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) ?? .init(start: nil, count: 0) }";
+          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}>? { return "
+          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) }";
       code_.SetValue("FIELDVAR", namer_.Method("mutable", field));
       code_ +=
           "{{ACCESS_TYPE}} var {{FIELDVAR}}: "
@@ -1268,9 +1268,10 @@ class SwiftGenerator : public BaseGenerator {
     code_.SetValue("DECL_TYPE", is_bit_flags ? "struct" : "enum");
     GenComment(enum_def.doc_comment);
     if (is_bit_flags) {
-      // bit_flags emit as an OptionSet `struct`, which cannot conform to
-      // FlatbuffersVectorInitializable (its default readFrom is only provided
-      // for the `Enum` protocol, which OptionSet structs do not adopt).
+      // bit_flags emit as an OptionSet `struct`. We omit
+      // FlatbuffersVectorInitializable (its default readFrom relies on the
+      // enum case machinery an OptionSet struct does not have), but still adopt
+      // Enum/Verifiable; the required `min` is emitted below as the empty set.
       code_ +=
           "{{ACCESS_TYPE}} {{DECL_TYPE}} {{ENUM_NAME}}: "
           "{{BASE_TYPE}}, {{ENUM_TYPE}} {";
@@ -1325,6 +1326,9 @@ class SwiftGenerator : public BaseGenerator {
     if (is_bit_flags) {
       code_ += "{{ACCESS_TYPE}} static let none: {{ENUM_NAME}} = []";
       code_ += "{{ACCESS_TYPE}} static let all: {{ENUM_NAME}} = [" + all_bit_flags + "]";
+      // Satisfy the `Enum` protocol's `min` requirement.
+      // The empty option set is the natural minimum / decode fallback.
+      code_ += "{{ACCESS_TYPE}} static var min: {{ENUM_NAME}} { [] }";
     } else {
       AddMinOrMaxEnumValue(VariantName(*enum_def.MaxValue(), is_legacy_naming),
                           "max");

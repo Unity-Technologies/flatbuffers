@@ -246,6 +246,7 @@ class SymbolTable {
 
   bool Add(const std::string& name, T* e) {
     vec.emplace_back(e);
+    vec_keys.emplace_back(name);
     auto it = dict.find(name);
     if (it != dict.end()) return true;
     dict[name] = e;
@@ -258,6 +259,11 @@ class SymbolTable {
       auto obj = it->second;
       dict.erase(it);
       dict[newname] = obj;
+
+      // replace the name in vec_keys
+      auto it2 = std::find(vec_keys.begin(), vec_keys.end(), oldname);
+      FLATBUFFERS_ASSERT(it2 != vec_keys.end());
+      *it2 = newname;
     } else {
       FLATBUFFERS_ASSERT(false);
     }
@@ -271,6 +277,7 @@ class SymbolTable {
  public:
   std::map<std::string, T*> dict;  // quick lookup
   std::vector<T*> vec;             // Used to iterate in order of insertion
+  std::vector<std::string> vec_keys;  // Same, but by key
 };
 
 // A name space, as set in the schema.
@@ -1234,6 +1241,7 @@ class Parser : public ParserState {
   std::vector<std::string> native_included_files_;
 
   std::map<std::string, bool> known_attributes_;
+  SymbolTable<Value> global_attributes_;
 
   IDLOptions opts;
   bool uses_flexbuffers_;
