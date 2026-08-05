@@ -4,8 +4,15 @@
 # and https://github.com/google/flatbuffers/labels for a list of valid labels
 #
 # See .github/workflows/label.yml for Github Action workflow script
-- uses: actions/labeler@v5
 
+c#:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.cs'
+          - 'net/**/*'
+          - 'tests/FlatBuffers.Test/**/*'
+          - 'tests/FlatBuffers.Benchmarks/**/*'
+          - 'src/idl_gen_csharp.cpp'
 
 swift:
   - changed-files:
