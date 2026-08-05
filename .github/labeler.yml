@@ -102,14 +102,14 @@ dart:
 
 "c++":
   - changed-files:
-       - any-glob-to-any-file:
+      - any-glob-to-any-file:
           - '**/*.cc'
           - '**/*.cpp'
           - '**/*.h'
 
 json:
   - changed-files:
-       - any-glob-to-any-file:
+      - any-glob-to-any-file:
           - '**/*.json'
           - 'src/idl_gen_json_schema.cpp'
 
