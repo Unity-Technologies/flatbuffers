@@ -7,13 +7,14 @@
 - uses: actions/labeler@v5
 
 "c#":
-  - changed-files:
-      - any-glob-to-any-file:
-          - '**/*.cs'
-          - 'net/**/*'
-          - 'tests/FlatBuffers.Test/**/*'
-          - 'tests/FlatBuffers.Benchmarks/**/*'
-          - 'src/idl_gen_csharp.cpp'
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - '**/*.cs'
+              - 'net/**/*'
+              - 'tests/FlatBuffers.Test/**/*'
+              - 'tests/FlatBuffers.Benchmarks/**/*'
+              - 'src/idl_gen_csharp.cpp'
 
 swift:
   - changed-files:
