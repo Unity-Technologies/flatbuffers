@@ -2,17 +2,28 @@
 
 package MyGame.Example;
 
-import java.nio.*;
-import java.lang.*;
-import java.util.*;
-import com.google.flatbuffers.*;
+import com.google.flatbuffers.BaseVector;
+import com.google.flatbuffers.BooleanVector;
+import com.google.flatbuffers.ByteVector;
+import com.google.flatbuffers.Constants;
+import com.google.flatbuffers.DoubleVector;
+import com.google.flatbuffers.FlatBufferBuilder;
+import com.google.flatbuffers.FloatVector;
+import com.google.flatbuffers.IntVector;
+import com.google.flatbuffers.LongVector;
+import com.google.flatbuffers.ShortVector;
+import com.google.flatbuffers.StringVector;
+import com.google.flatbuffers.Struct;
+import com.google.flatbuffers.UnionVector;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * an example documentation comment: "monster object"
  */
 @SuppressWarnings("unused")
-public final class Monster extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_22_10_26(); }
+public final class Monster extends com.google.flatbuffers.Table {
+  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
   public static Monster getRootAsMonster(ByteBuffer _bb) { return getRootAsMonster(_bb, new Monster()); }
   public static Monster getRootAsMonster(ByteBuffer _bb, Monster obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
   public static boolean MonsterBufferHasIdentifier(ByteBuffer _bb) { return __has_identifier(_bb, "MONS"); }
@@ -38,7 +49,7 @@ public final class Monster extends Table {
   public int color() { int o = __offset(16); return o != 0 ? bb.get(o + bb_pos) & 0xFF : 8; }
   public boolean mutateColor(int color) { int o = __offset(16); if (o != 0) { bb.put(o + bb_pos, (byte) color); return true; } else { return false; } }
   public byte testType() { int o = __offset(18); return o != 0 ? bb.get(o + bb_pos) : 0; }
-  public Table test(Table obj) { int o = __offset(20); return o != 0 ? __union(obj, o + bb_pos) : null; }
+  public com.google.flatbuffers.Table test(com.google.flatbuffers.Table obj) { int o = __offset(20); return o != 0 ? __union(obj, o + bb_pos) : null; }
   public MyGame.Example.Test test4(int j) { return test4(new MyGame.Example.Test(), j); }
   public MyGame.Example.Test test4(MyGame.Example.Test obj, int j) { int o = __offset(22); return o != 0 ? obj.__assign(__vector(o) + j * 4, bb) : null; }
   public int test4Length() { int o = __offset(22); return o != 0 ? __vector_len(o) : 0; }
@@ -182,9 +193,9 @@ public final class Monster extends Table {
   public ByteBuffer vectorOfNonOwningReferencesInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 88, 8); }
   public boolean mutateVectorOfNonOwningReferences(int j, long vector_of_non_owning_references) { int o = __offset(88); if (o != 0) { bb.putLong(__vector(o) + j * 8, vector_of_non_owning_references); return true; } else { return false; } }
   public byte anyUniqueType() { int o = __offset(90); return o != 0 ? bb.get(o + bb_pos) : 0; }
-  public Table anyUnique(Table obj) { int o = __offset(92); return o != 0 ? __union(obj, o + bb_pos) : null; }
+  public com.google.flatbuffers.Table anyUnique(com.google.flatbuffers.Table obj) { int o = __offset(92); return o != 0 ? __union(obj, o + bb_pos) : null; }
   public byte anyAmbiguousType() { int o = __offset(94); return o != 0 ? bb.get(o + bb_pos) : 0; }
-  public Table anyAmbiguous(Table obj) { int o = __offset(96); return o != 0 ? __union(obj, o + bb_pos) : null; }
+  public com.google.flatbuffers.Table anyAmbiguous(com.google.flatbuffers.Table obj) { int o = __offset(96); return o != 0 ? __union(obj, o + bb_pos) : null; }
   public int vectorOfEnums(int j) { int o = __offset(98); return o != 0 ? bb.get(__vector(o) + j * 1) & 0xFF : 0; }
   public int vectorOfEnumsLength() { int o = __offset(98); return o != 0 ? __vector_len(o) : 0; }
   public ByteVector vectorOfEnumsVector() { return vectorOfEnumsVector(new ByteVector()); }
@@ -216,8 +227,24 @@ public final class Monster extends Table {
   public boolean mutateLongEnumNonEnumDefault(long long_enum_non_enum_default) { int o = __offset(108); if (o != 0) { bb.putLong(o + bb_pos, long_enum_non_enum_default); return true; } else { return false; } }
   public long longEnumNormalDefault() { int o = __offset(110); return o != 0 ? bb.getLong(o + bb_pos) : 2L; }
   public boolean mutateLongEnumNormalDefault(long long_enum_normal_default) { int o = __offset(110); if (o != 0) { bb.putLong(o + bb_pos, long_enum_normal_default); return true; } else { return false; } }
+  public float nanDefault() { int o = __offset(112); return o != 0 ? bb.getFloat(o + bb_pos) : Float.NaN; }
+  public boolean mutateNanDefault(float nan_default) { int o = __offset(112); if (o != 0) { bb.putFloat(o + bb_pos, nan_default); return true; } else { return false; } }
+  public float infDefault() { int o = __offset(114); return o != 0 ? bb.getFloat(o + bb_pos) : Float.POSITIVE_INFINITY; }
+  public boolean mutateInfDefault(float inf_default) { int o = __offset(114); if (o != 0) { bb.putFloat(o + bb_pos, inf_default); return true; } else { return false; } }
+  public float positiveInfDefault() { int o = __offset(116); return o != 0 ? bb.getFloat(o + bb_pos) : Float.POSITIVE_INFINITY; }
+  public boolean mutatePositiveInfDefault(float positive_inf_default) { int o = __offset(116); if (o != 0) { bb.putFloat(o + bb_pos, positive_inf_default); return true; } else { return false; } }
+  public float infinityDefault() { int o = __offset(118); return o != 0 ? bb.getFloat(o + bb_pos) : Float.POSITIVE_INFINITY; }
+  public boolean mutateInfinityDefault(float infinity_default) { int o = __offset(118); if (o != 0) { bb.putFloat(o + bb_pos, infinity_default); return true; } else { return false; } }
+  public float positiveInfinityDefault() { int o = __offset(120); return o != 0 ? bb.getFloat(o + bb_pos) : Float.POSITIVE_INFINITY; }
+  public boolean mutatePositiveInfinityDefault(float positive_infinity_default) { int o = __offset(120); if (o != 0) { bb.putFloat(o + bb_pos, positive_infinity_default); return true; } else { return false; } }
+  public float negativeInfDefault() { int o = __offset(122); return o != 0 ? bb.getFloat(o + bb_pos) : Float.NEGATIVE_INFINITY; }
+  public boolean mutateNegativeInfDefault(float negative_inf_default) { int o = __offset(122); if (o != 0) { bb.putFloat(o + bb_pos, negative_inf_default); return true; } else { return false; } }
+  public float negativeInfinityDefault() { int o = __offset(124); return o != 0 ? bb.getFloat(o + bb_pos) : Float.NEGATIVE_INFINITY; }
+  public boolean mutateNegativeInfinityDefault(float negative_infinity_default) { int o = __offset(124); if (o != 0) { bb.putFloat(o + bb_pos, negative_infinity_default); return true; } else { return false; } }
+  public double doubleInfDefault() { int o = __offset(126); return o != 0 ? bb.getDouble(o + bb_pos) : Double.POSITIVE_INFINITY; }
+  public boolean mutateDoubleInfDefault(double double_inf_default) { int o = __offset(126); if (o != 0) { bb.putDouble(o + bb_pos, double_inf_default); return true; } else { return false; } }
 
-  public static void startMonster(FlatBufferBuilder builder) { builder.startTable(54); }
+  public static void startMonster(FlatBufferBuilder builder) { builder.startTable(62); }
   public static void addPos(FlatBufferBuilder builder, int posOffset) { builder.addStruct(0, posOffset, 0); }
   public static void addMana(FlatBufferBuilder builder, short mana) { builder.addShort(1, mana, 150); }
   public static void addHp(FlatBufferBuilder builder, short hp) { builder.addShort(2, hp, 100); }
@@ -313,6 +340,14 @@ public final class Monster extends Table {
   public static void addNativeInline(FlatBufferBuilder builder, int nativeInlineOffset) { builder.addStruct(51, nativeInlineOffset, 0); }
   public static void addLongEnumNonEnumDefault(FlatBufferBuilder builder, long longEnumNonEnumDefault) { builder.addLong(52, longEnumNonEnumDefault, 0L); }
   public static void addLongEnumNormalDefault(FlatBufferBuilder builder, long longEnumNormalDefault) { builder.addLong(53, longEnumNormalDefault, 2L); }
+  public static void addNanDefault(FlatBufferBuilder builder, float nanDefault) { builder.addFloat(54, nanDefault, Float.NaN); }
+  public static void addInfDefault(FlatBufferBuilder builder, float infDefault) { builder.addFloat(55, infDefault, Float.POSITIVE_INFINITY); }
+  public static void addPositiveInfDefault(FlatBufferBuilder builder, float positiveInfDefault) { builder.addFloat(56, positiveInfDefault, Float.POSITIVE_INFINITY); }
+  public static void addInfinityDefault(FlatBufferBuilder builder, float infinityDefault) { builder.addFloat(57, infinityDefault, Float.POSITIVE_INFINITY); }
+  public static void addPositiveInfinityDefault(FlatBufferBuilder builder, float positiveInfinityDefault) { builder.addFloat(58, positiveInfinityDefault, Float.POSITIVE_INFINITY); }
+  public static void addNegativeInfDefault(FlatBufferBuilder builder, float negativeInfDefault) { builder.addFloat(59, negativeInfDefault, Float.NEGATIVE_INFINITY); }
+  public static void addNegativeInfinityDefault(FlatBufferBuilder builder, float negativeInfinityDefault) { builder.addFloat(60, negativeInfinityDefault, Float.NEGATIVE_INFINITY); }
+  public static void addDoubleInfDefault(FlatBufferBuilder builder, double doubleInfDefault) { builder.addDouble(61, doubleInfDefault, Double.POSITIVE_INFINITY); }
   public static int endMonster(FlatBufferBuilder builder) {
     int o = builder.endTable();
     builder.required(o, 10);  // name
@@ -375,7 +410,7 @@ public final class Monster extends Table {
     MyGame.Example.AnyUnion _oTest = new MyGame.Example.AnyUnion();
     byte _oTestType = testType();
     _oTest.setType(_oTestType);
-    Table _oTestValue;
+    com.google.flatbuffers.Table _oTestValue;
     switch (_oTestType) {
       case MyGame.Example.Any.Monster:
         _oTestValue = test(new MyGame.Example.Monster());
@@ -479,7 +514,7 @@ public final class Monster extends Table {
     MyGame.Example.AnyUniqueAliasesUnion _oAnyUnique = new MyGame.Example.AnyUniqueAliasesUnion();
     byte _oAnyUniqueType = anyUniqueType();
     _oAnyUnique.setType(_oAnyUniqueType);
-    Table _oAnyUniqueValue;
+    com.google.flatbuffers.Table _oAnyUniqueValue;
     switch (_oAnyUniqueType) {
       case MyGame.Example.AnyUniqueAliases.M:
         _oAnyUniqueValue = anyUnique(new MyGame.Example.Monster());
@@ -499,7 +534,7 @@ public final class Monster extends Table {
     MyGame.Example.AnyAmbiguousAliasesUnion _oAnyAmbiguous = new MyGame.Example.AnyAmbiguousAliasesUnion();
     byte _oAnyAmbiguousType = anyAmbiguousType();
     _oAnyAmbiguous.setType(_oAnyAmbiguousType);
-    Table _oAnyAmbiguousValue;
+    com.google.flatbuffers.Table _oAnyAmbiguousValue;
     switch (_oAnyAmbiguousType) {
       case MyGame.Example.AnyAmbiguousAliases.M1:
         _oAnyAmbiguousValue = anyAmbiguous(new MyGame.Example.Monster());
@@ -533,6 +568,22 @@ public final class Monster extends Table {
     _o.setLongEnumNonEnumDefault(_oLongEnumNonEnumDefault);
     long _oLongEnumNormalDefault = longEnumNormalDefault();
     _o.setLongEnumNormalDefault(_oLongEnumNormalDefault);
+    float _oNanDefault = nanDefault();
+    _o.setNanDefault(_oNanDefault);
+    float _oInfDefault = infDefault();
+    _o.setInfDefault(_oInfDefault);
+    float _oPositiveInfDefault = positiveInfDefault();
+    _o.setPositiveInfDefault(_oPositiveInfDefault);
+    float _oInfinityDefault = infinityDefault();
+    _o.setInfinityDefault(_oInfinityDefault);
+    float _oPositiveInfinityDefault = positiveInfinityDefault();
+    _o.setPositiveInfinityDefault(_oPositiveInfinityDefault);
+    float _oNegativeInfDefault = negativeInfDefault();
+    _o.setNegativeInfDefault(_oNegativeInfDefault);
+    float _oNegativeInfinityDefault = negativeInfinityDefault();
+    _o.setNegativeInfinityDefault(_oNegativeInfinityDefault);
+    double _oDoubleInfDefault = doubleInfDefault();
+    _o.setDoubleInfDefault(_oDoubleInfDefault);
   }
   public static int pack(FlatBufferBuilder builder, MonsterT _o) {
     if (_o == null) return 0;
@@ -725,6 +776,14 @@ public final class Monster extends Table {
     addNativeInline(builder, MyGame.Example.Test.pack(builder, _o.getNativeInline()));
     addLongEnumNonEnumDefault(builder, _o.getLongEnumNonEnumDefault());
     addLongEnumNormalDefault(builder, _o.getLongEnumNormalDefault());
+    addNanDefault(builder, _o.getNanDefault());
+    addInfDefault(builder, _o.getInfDefault());
+    addPositiveInfDefault(builder, _o.getPositiveInfDefault());
+    addInfinityDefault(builder, _o.getInfinityDefault());
+    addPositiveInfinityDefault(builder, _o.getPositiveInfinityDefault());
+    addNegativeInfDefault(builder, _o.getNegativeInfDefault());
+    addNegativeInfinityDefault(builder, _o.getNegativeInfinityDefault());
+    addDoubleInfDefault(builder, _o.getDoubleInfDefault());
     return endMonster(builder);
   }
 }

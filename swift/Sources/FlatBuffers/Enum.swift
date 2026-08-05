@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc. All rights reserved.
+ * Copyright 2024 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#if !os(WASI)
 import Foundation
-#else
-import SwiftOverlayShims
+
+#if canImport(Common)
+import Common
 #endif
 
 /// Enum is a protocol that all flatbuffers enums should conform to
@@ -28,8 +28,13 @@ public protocol Enum {
   associatedtype T: Scalar & Verifiable
   /// Size of the current associatedtype in the enum
   static var byteSize: Int { get }
+  /// Provides a static min value in case we fail to decode
+  /// in vectors
+  static var min: Self { get }
   /// The current value the enum hosts
   var value: T { get }
+
+  init?(rawValue: T)
 }
 
 extension Enum where Self: Verifiable {

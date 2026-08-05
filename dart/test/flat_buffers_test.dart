@@ -1,17 +1,15 @@
-import 'dart:typed_data';
 import 'dart:io' as io;
-
-import 'package:path/path.dart' as path;
+import 'dart:typed_data';
 
 import 'package:flat_buffers/flat_buffers.dart';
+import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
-import './monster_test_my_game.example_generated.dart' as example;
-import './monster_test_my_game.example2_generated.dart' as example2;
-import './list_of_enums_generated.dart' as example3;
 import './bool_structs_generated.dart' as example4;
-import './keyword_test_keyword_test_generated.dart' as keyword_test;
+import './monster_test_my_game.example2_generated.dart' as example2;
+import './monster_test_my_game.example_generated.dart' as example;
+import 'enums_generated.dart' as example3;
 
 main() {
   defineReflectiveSuite(() {
@@ -30,11 +28,9 @@ int indexToField(int index) {
 @reflectiveTest
 class CheckOtherLangaugesData {
   test_cppData() async {
-    List<int> data = await io.File(path.join(
-      path.context.current,
-      'test',
-      'monsterdata_test.mon',
-    )).readAsBytes();
+    List<int> data = await io.File(
+      path.join(path.context.current, 'test', 'monsterdata_test.mon'),
+    ).readAsBytes();
     example.Monster mon = example.Monster(data);
     expect(mon.hp, 80);
     expect(mon.mana, 150);
@@ -64,11 +60,11 @@ class CheckOtherLangaugesData {
     expect(
       mon.toString(),
       'Monster{'
-      'pos: Vec3{x: 1.0, y: 2.0, z: 3.0, test1: 3.0, test2: Color{value: 2}, test3: Test{a: 5, b: 6}}, '
+      'pos: Vec3{x: 1.0, y: 2.0, z: 3.0, test1: 3.0, test2: Color.Green, test3: Test{a: 5, b: 6}}, '
       'mana: 150, hp: 80, name: MyMonster, inventory: [0, 1, 2, 3, 4], '
-      'color: Color{value: 8}, testType: AnyTypeId{value: 1}, '
+      'color: Color.Blue, testType: AnyTypeId.Monster, '
       'test: Monster{pos: null, mana: 150, hp: 100, name: Fred, '
-      'inventory: null, color: Color{value: 8}, testType: null, '
+      'inventory: null, color: Color.Blue, testType: null, '
       'test: null, test4: null, testarrayofstring: null, '
       'testarrayoftables: null, enemy: null, testnestedflatbuffer: null, '
       'testempty: null, testbool: false, testhashs32Fnv1: 0, '
@@ -83,15 +79,18 @@ class CheckOtherLangaugesData {
       'coOwningReference: 0, vectorOfCoOwningReferences: null, '
       'nonOwningReference: 0, vectorOfNonOwningReferences: null, '
       'anyUniqueType: null, anyUnique: null, anyAmbiguousType: null, '
-      'anyAmbiguous: null, vectorOfEnums: null, signedEnum: Race{value: -1}, '
+      'anyAmbiguous: null, vectorOfEnums: null, signedEnum: Race.None, '
       'testrequirednestedflatbuffer: null, scalarKeySortedTables: null, '
       'nativeInline: null, '
-      'longEnumNonEnumDefault: LongEnum{value: 0}, '
-      'longEnumNormalDefault: LongEnum{value: 2}}, '
+      'longEnumNonEnumDefault: LongEnum._default, '
+      'longEnumNormalDefault: LongEnum.LongOne, nanDefault: NaN, '
+      'infDefault: Infinity, positiveInfDefault: Infinity, infinityDefault: '
+      'Infinity, positiveInfinityDefault: Infinity, negativeInfDefault: '
+      '-Infinity, negativeInfinityDefault: -Infinity, doubleInfDefault: Infinity}, '
       'test4: [Test{a: 10, b: 20}, Test{a: 30, b: 40}], '
       'testarrayofstring: [test1, test2], testarrayoftables: null, '
       'enemy: Monster{pos: null, mana: 150, hp: 100, name: Fred, '
-      'inventory: null, color: Color{value: 8}, testType: null, '
+      'inventory: null, color: Color.Blue, testType: null, '
       'test: null, test4: null, testarrayofstring: null, '
       'testarrayoftables: null, enemy: null, testnestedflatbuffer: null, '
       'testempty: null, testbool: false, testhashs32Fnv1: 0, '
@@ -106,11 +105,14 @@ class CheckOtherLangaugesData {
       'coOwningReference: 0, vectorOfCoOwningReferences: null, '
       'nonOwningReference: 0, vectorOfNonOwningReferences: null, '
       'anyUniqueType: null, anyUnique: null, anyAmbiguousType: null, '
-      'anyAmbiguous: null, vectorOfEnums: null, signedEnum: Race{value: -1}, '
+      'anyAmbiguous: null, vectorOfEnums: null, signedEnum: Race.None, '
       'testrequirednestedflatbuffer: null, scalarKeySortedTables: null, '
       'nativeInline: null, '
-      'longEnumNonEnumDefault: LongEnum{value: 0}, '
-      'longEnumNormalDefault: LongEnum{value: 2}}, '
+      'longEnumNonEnumDefault: LongEnum._default, '
+      'longEnumNormalDefault: LongEnum.LongOne, nanDefault: NaN, '
+      'infDefault: Infinity, positiveInfDefault: Infinity, infinityDefault: '
+      'Infinity, positiveInfinityDefault: Infinity, negativeInfDefault: '
+      '-Infinity, negativeInfinityDefault: -Infinity, doubleInfDefault: Infinity}, '
       'testnestedflatbuffer: null, testempty: null, testbool: true, '
       'testhashs32Fnv1: -579221183, testhashu32Fnv1: 3715746113, '
       'testhashs64Fnv1: 7930699090847568257, '
@@ -132,12 +134,15 @@ class CheckOtherLangaugesData {
       'vectorOfNonOwningReferences: null, '
       'anyUniqueType: null, anyUnique: null, '
       'anyAmbiguousType: null, '
-      'anyAmbiguous: null, vectorOfEnums: null, signedEnum: Race{value: -1}, '
+      'anyAmbiguous: null, vectorOfEnums: null, signedEnum: Race.None, '
       'testrequirednestedflatbuffer: null, scalarKeySortedTables: [Stat{id: '
       'miss, val: 0, count: 0}, Stat{id: hit, val: 10, count: 1}], '
       'nativeInline: Test{a: 1, b: 2}, '
-      'longEnumNonEnumDefault: LongEnum{value: 0}, '
-      'longEnumNormalDefault: LongEnum{value: 2}}',
+      'longEnumNonEnumDefault: LongEnum._default, '
+      'longEnumNormalDefault: LongEnum.LongOne, nanDefault: NaN, '
+      'infDefault: Infinity, positiveInfDefault: Infinity, infinityDefault: '
+      'Infinity, positiveInfinityDefault: Infinity, negativeInfDefault: '
+      '-Infinity, negativeInfinityDefault: -Infinity, doubleInfDefault: Infinity}',
     );
   }
 }
@@ -208,6 +213,10 @@ class BuilderTest {
       ..addTestarrayofstringOffset(testArrayOfString);
     final mon = monBuilder.finish();
     fbBuilder.finish(mon);
+
+    final mon3 = example.Monster(fbBuilder.buffer);
+    expect(mon3.name, 'MyMonster');
+    expect(mon3.pos!.test1, 3.0);
   }
 
   void test_error_addInt32_withoutStartTable([Builder? builder]) {
@@ -287,20 +296,72 @@ class BuilderTest {
     expect(allocator.buffer(builder.size()), [2, 0, 0, 0, 0, 0, 0, 1]);
 
     builder.putUint8(3);
-    expect(
-        allocator.buffer(builder.size()), [0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 1]);
+    expect(allocator.buffer(builder.size()), [
+      0,
+      0,
+      0,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+    ]);
 
     builder.putUint8(4);
-    expect(
-        allocator.buffer(builder.size()), [0, 0, 4, 3, 2, 0, 0, 0, 0, 0, 0, 1]);
+    expect(allocator.buffer(builder.size()), [
+      0,
+      0,
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+    ]);
 
     builder.putUint8(5);
-    expect(
-        allocator.buffer(builder.size()), [0, 5, 4, 3, 2, 0, 0, 0, 0, 0, 0, 1]);
+    expect(allocator.buffer(builder.size()), [
+      0,
+      5,
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+    ]);
 
     builder.putUint32(6);
-    expect(allocator.buffer(builder.size()),
-        [6, 0, 0, 0, 0, 5, 4, 3, 2, 0, 0, 0, 0, 0, 0, 1]);
+    expect(allocator.buffer(builder.size()), [
+      6,
+      0,
+      0,
+      0,
+      0,
+      5,
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+    ]);
   }
 
   void test_table_default() {
@@ -320,14 +381,14 @@ class BuilderTest {
     int objectOffset = buffer.derefObject(0);
     // was not written, so uses the new default value
     expect(
-        const Int32Reader()
-            .vTableGet(buffer, objectOffset, indexToField(0), 15),
-        15);
+      const Int32Reader().vTableGet(buffer, objectOffset, indexToField(0), 15),
+      15,
+    );
     // has the written value
     expect(
-        const Int32Reader()
-            .vTableGet(buffer, objectOffset, indexToField(1), 15),
-        20);
+      const Int32Reader().vTableGet(buffer, objectOffset, indexToField(1), 15),
+      20,
+    );
   }
 
   void test_table_format([Builder? builder]) {
@@ -359,7 +420,9 @@ class BuilderTest {
     for (int i = 0; i < 3; i++) {
       int offset = byteData.getUint16(vTableLoc + 4 + 2 * i, Endian.little);
       expect(
-          byteData.getInt32(tableDataLoc + offset, Endian.little), 10 + 10 * i);
+        byteData.getInt32(tableDataLoc + offset, Endian.little),
+        10 + 10 * i,
+      );
     }
   }
 
@@ -369,10 +432,14 @@ class BuilderTest {
     List<int> byteList;
     {
       Builder builder = Builder(initialSize: 0);
-      int? latinStringOffset =
-          builder.writeString(latinString, asciiOptimization: true);
-      int? unicodeStringOffset =
-          builder.writeString(unicodeString, asciiOptimization: true);
+      int? latinStringOffset = builder.writeString(
+        latinString,
+        asciiOptimization: true,
+      );
+      int? unicodeStringOffset = builder.writeString(
+        unicodeString,
+        asciiOptimization: true,
+      );
       builder.startTable(2);
       builder.addOffset(0, latinStringOffset);
       builder.addOffset(1, unicodeStringOffset);
@@ -384,13 +451,19 @@ class BuilderTest {
     BufferContext buf = BufferContext.fromBytes(byteList);
     int objectOffset = buf.derefObject(0);
     expect(
-        const StringReader()
-            .vTableGetNullable(buf, objectOffset, indexToField(0)),
-        latinString);
+      const StringReader().vTableGetNullable(
+        buf,
+        objectOffset,
+        indexToField(0),
+      ),
+      latinString,
+    );
     expect(
-        const StringReader(asciiOptimization: true)
-            .vTableGetNullable(buf, objectOffset, indexToField(1)),
-        unicodeString);
+      const StringReader(
+        asciiOptimization: true,
+      ).vTableGetNullable(buf, objectOffset, indexToField(1)),
+      unicodeString,
+    );
   }
 
   void test_table_types([Builder? builder]) {
@@ -414,33 +487,41 @@ class BuilderTest {
     BufferContext buf = BufferContext.fromBytes(byteList);
     int objectOffset = buf.derefObject(0);
     expect(
-        const BoolReader()
-            .vTableGetNullable(buf, objectOffset, indexToField(0)),
-        true);
+      const BoolReader().vTableGetNullable(buf, objectOffset, indexToField(0)),
+      true,
+    );
     expect(
-        const Int8Reader()
-            .vTableGetNullable(buf, objectOffset, indexToField(1)),
-        10);
+      const Int8Reader().vTableGetNullable(buf, objectOffset, indexToField(1)),
+      10,
+    );
     expect(
-        const Int32Reader()
-            .vTableGetNullable(buf, objectOffset, indexToField(2)),
-        20);
+      const Int32Reader().vTableGetNullable(buf, objectOffset, indexToField(2)),
+      20,
+    );
     expect(
-        const StringReader()
-            .vTableGetNullable(buf, objectOffset, indexToField(3)),
-        '12345');
+      const StringReader().vTableGetNullable(
+        buf,
+        objectOffset,
+        indexToField(3),
+      ),
+      '12345',
+    );
     expect(
-        const Int32Reader()
-            .vTableGetNullable(buf, objectOffset, indexToField(4)),
-        40);
+      const Int32Reader().vTableGetNullable(buf, objectOffset, indexToField(4)),
+      40,
+    );
     expect(
-        const Uint32Reader()
-            .vTableGetNullable(buf, objectOffset, indexToField(5)),
-        0x9ABCDEF0);
+      const Uint32Reader().vTableGetNullable(
+        buf,
+        objectOffset,
+        indexToField(5),
+      ),
+      0x9ABCDEF0,
+    );
     expect(
-        const Uint8Reader()
-            .vTableGetNullable(buf, objectOffset, indexToField(6)),
-        0x9A);
+      const Uint8Reader().vTableGetNullable(buf, objectOffset, indexToField(6)),
+      0x9A,
+    );
   }
 
   void test_writeList_of_Uint32() {
@@ -585,8 +666,9 @@ class BuilderTest {
     }
     // read and verify
     BufferContext buf = BufferContext.fromBytes(byteList);
-    List<TestPointImpl> items =
-        const ListReader<TestPointImpl>(TestPointReader()).read(buf, 0);
+    List<TestPointImpl> items = const ListReader<TestPointImpl>(
+      TestPointReader(),
+    ).read(buf, 0);
     expect(items, hasLength(2));
     expect(items[0].x, 10);
     expect(items[0].y, 20);
@@ -616,8 +698,10 @@ class BuilderTest {
     List<int> byteList;
     {
       builder ??= Builder(initialSize: 0);
-      int listOffset = builder.writeList(
-          [builder.writeString('12345'), builder.writeString('ABC')]);
+      int listOffset = builder.writeList([
+        builder.writeString('12345'),
+        builder.writeString('ABC'),
+      ]);
       builder.startTable(1);
       builder.addOffset(0, listOffset);
       int offset = builder.endTable();
@@ -696,13 +780,14 @@ class BuilderTest {
       test_table_format,
       test_table_types,
       test_writeList_ofObjects,
-      test_writeList_ofStrings_inObject
+      test_writeList_ofStrings_inObject,
     ];
 
     // Execute all test cases in all permutations of their order.
     // To do that, we generate permutations of test case indexes.
-    final testCasesPermutations =
-        _permutationsOf(List.generate(testCases.length, (index) => index));
+    final testCasesPermutations = _permutationsOf(
+      List.generate(testCases.length, (index) => index),
+    );
     expect(testCasesPermutations.length, _factorial(testCases.length));
 
     for (var indexes in testCasesPermutations) {
@@ -760,7 +845,6 @@ class BuilderTest {
 class ObjectAPITest {
   void test_tableStat() {
     final object1 = example.StatT(count: 3, id: "foo", val: 4);
-    expect(object1 is Packable, isTrue);
     final fbb = Builder();
     fbb.finish(object1.pack(fbb));
     final object2 = example.Stat(fbb.buffer).unpack();
@@ -773,28 +857,28 @@ class ObjectAPITest {
   void test_tableMonster() {
     final monster = example.MonsterT()
       ..pos = example.Vec3T(
-          x: 1,
-          y: 2,
-          z: 3,
-          test1: 4.0,
-          test2: example.Color.Red,
-          test3: example.TestT(a: 1, b: 2))
+        x: 1,
+        y: 2,
+        z: 3,
+        test1: 4.0,
+        test2: example.Color.Red,
+        test3: example.TestT(a: 1, b: 2),
+      )
       ..mana = 2
       ..name = 'Monstrous'
       ..inventory = [24, 42]
       ..color = example.Color.Green
-      // TODO be smarter for unions and automatically set the `type` field?
       ..testType = example.AnyTypeId.MyGame_Example2_Monster
       ..test = example2.MonsterT()
       ..test4 = [example.TestT(a: 3, b: 4), example.TestT(a: 5, b: 6)]
       ..testarrayofstring = ["foo", "bar"]
-      ..testarrayoftables = [example.MonsterT(name: 'Oof')]
-      ..enemy = example.MonsterT(name: 'Enemy')
+      ..testarrayoftables = [example.MonsterT(name: 'Oof', testf: 2.75)]
+      ..enemy = example.MonsterT(name: 'Enemy', testf: 2.5)
       ..testarrayofbools = [false, true, false]
-      ..testf = 42.24
+      ..testf = 42.25
       ..testarrayofsortedstruct = [
         example.AbilityT(id: 1, distance: 5),
-        example.AbilityT(id: 3, distance: 7)
+        example.AbilityT(id: 3, distance: 7),
       ]
       ..vectorOfLongs = [5, 6, 7]
       ..vectorOfDoubles = [8.9, 9.0, 10.1, 11.2]
@@ -809,16 +893,15 @@ class ObjectAPITest {
     fbBuilder.finish(offset);
     final data = fbBuilder.buffer;
 
-    // TODO currently broken because of struct builder issue, see #6688
-    // final monster2 = example.Monster(data); // Monster (reader)
-    // expect(
-    //     // map Monster => MonsterT, Vec3 => Vec3T, ...
-    //     monster2.toString().replaceAllMapped(
-    //         RegExp('([a-zA-z0-9]+){'), (match) => match.group(1) + 'T{'),
-    //     monster.toString());
-    //
-    // final monster3 = monster2.unpack(); // MonsterT
-    // expect(monster3.toString(), monster.toString());
+    final monster2 = example.Monster(data); // Monster (reader)
+    expect(
+        // map Monster => MonsterT, Vec3 => Vec3T, ...
+        monster2.toString().replaceAllMapped(
+            RegExp('([a-zA-z0-9]+){'), (match) => match.group(1)! + 'T{'),
+        monster.toString());
+
+    final monster3 = monster2.unpack(); // MonsterT
+    expect(monster3.toString(), monster.toString());
   }
 
   void test_Lists() {
@@ -857,8 +940,9 @@ class StringListWrapperImpl {
 
   StringListWrapperImpl(this.bp, this.offset);
 
-  List<String>? get items => const ListReader<String>(StringReader())
-      .vTableGetNullable(bp, offset, indexToField(0));
+  List<String>? get items => const ListReader<String>(
+    StringReader(),
+  ).vTableGetNullable(bp, offset, indexToField(0));
 }
 
 class StringListWrapperReader extends TableReader<StringListWrapperImpl> {
@@ -896,10 +980,14 @@ class GeneratorTest {
     expect(example.Color.values, same(example.Color.values));
     expect(example.Race.values, same(example.Race.values));
     expect(example.AnyTypeId.values, same(example.AnyTypeId.values));
-    expect(example.AnyUniqueAliasesTypeId.values,
-        same(example.AnyUniqueAliasesTypeId.values));
-    expect(example.AnyAmbiguousAliasesTypeId.values,
-        same(example.AnyAmbiguousAliasesTypeId.values));
+    expect(
+      example.AnyUniqueAliasesTypeId.values,
+      same(example.AnyUniqueAliasesTypeId.values),
+    );
+    expect(
+      example.AnyAmbiguousAliasesTypeId.values,
+      same(example.AnyAmbiguousAliasesTypeId.values),
+    );
   }
 }
 
@@ -907,11 +995,13 @@ class GeneratorTest {
 @reflectiveTest
 class ListOfEnumsTest {
   void test_listOfEnums() async {
-    var mytable = example3.MyTableObjectBuilder(options: [
-      example3.OptionsEnum.A,
-      example3.OptionsEnum.B,
-      example3.OptionsEnum.C
-    ]);
+    var mytable = example3.MyTableObjectBuilder(
+      options: [
+        example3.OptionsEnum.A,
+        example3.OptionsEnum.B,
+        example3.OptionsEnum.C,
+      ],
+    );
     var bytes = mytable.toBytes();
     var mytable_read = example3.MyTable(bytes);
     expect(mytable_read.options![0].value, example3.OptionsEnum.A.value);
@@ -924,7 +1014,8 @@ class ListOfEnumsTest {
 class BoolInStructTest {
   void test_boolInStruct() async {
     var mystruct = example4.FooObjectBuilder(
-        myFoo: example4.FooPropertiesObjectBuilder(a: true, b: false));
+      myFoo: example4.FooPropertiesObjectBuilder(a: true, b: false),
+    );
     var bytes = mystruct.toBytes();
     var mystruct_read = example4.Foo(bytes);
     expect(mystruct_read.myFoo!.a, true);

@@ -17,18 +17,18 @@ package com.google.flatbuffers.kotlin
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ByteArrayTest {
 
   @Test
   fun testByte() {
-    val testSet = arrayOf(
-      67.toByte() to byteArrayOf(67),
-      Byte.MIN_VALUE to byteArrayOf(-128),
-      Byte.MAX_VALUE to byteArrayOf(127),
-      0.toByte() to byteArrayOf(0)
-    )
+    val testSet =
+      arrayOf(
+        67.toByte() to byteArrayOf(67),
+        Byte.MIN_VALUE to byteArrayOf(-128),
+        Byte.MAX_VALUE to byteArrayOf(127),
+        0.toByte() to byteArrayOf(0),
+      )
     val data = ByteArray(1)
     testSet.forEach {
       data[0] = it.first
@@ -39,12 +39,13 @@ class ByteArrayTest {
 
   @Test
   fun testShort() {
-    val testSet = arrayOf(
-      6712.toShort() to byteArrayOf(56, 26),
-      Short.MIN_VALUE to byteArrayOf(0, -128),
-      Short.MAX_VALUE to byteArrayOf(-1, 127),
-      0.toShort() to byteArrayOf(0, 0,)
-    )
+    val testSet =
+      arrayOf(
+        6712.toShort() to byteArrayOf(56, 26),
+        Short.MIN_VALUE to byteArrayOf(0, -128),
+        Short.MAX_VALUE to byteArrayOf(-1, 127),
+        0.toShort() to byteArrayOf(0, 0),
+      )
 
     val data = ByteArray(Short.SIZE_BYTES)
     testSet.forEach {
@@ -56,12 +57,13 @@ class ByteArrayTest {
 
   @Test
   fun testInt() {
-    val testSet = arrayOf(
-      33333500 to byteArrayOf(-4, -96, -4, 1),
-      Int.MIN_VALUE to byteArrayOf(0, 0, 0, -128),
-      Int.MAX_VALUE to byteArrayOf(-1, -1, -1, 127),
-      0 to byteArrayOf(0, 0, 0, 0)
-    )
+    val testSet =
+      arrayOf(
+        33333500 to byteArrayOf(-4, -96, -4, 1),
+        Int.MIN_VALUE to byteArrayOf(0, 0, 0, -128),
+        Int.MAX_VALUE to byteArrayOf(-1, -1, -1, 127),
+        0 to byteArrayOf(0, 0, 0, 0),
+      )
     val data = ByteArray(Int.SIZE_BYTES)
     testSet.forEach {
       data.setInt(0, it.first)
@@ -72,13 +74,14 @@ class ByteArrayTest {
 
   @Test
   fun testLong() {
-    val testSet = arrayOf(
-      1234567123122890123L to byteArrayOf(-117, -91, 29, -23, 65, 16, 34, 17),
-      -1L to byteArrayOf(-1, -1, -1, -1, -1, -1, -1, -1),
-      Long.MIN_VALUE to byteArrayOf(0, 0, 0, 0, 0, 0, 0, -128),
-      Long.MAX_VALUE to byteArrayOf(-1, -1, -1, -1, -1, -1, -1, 127),
-      0L to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)
-    )
+    val testSet =
+      arrayOf(
+        1234567123122890123L to byteArrayOf(-117, -91, 29, -23, 65, 16, 34, 17),
+        -1L to byteArrayOf(-1, -1, -1, -1, -1, -1, -1, -1),
+        Long.MIN_VALUE to byteArrayOf(0, 0, 0, 0, 0, 0, 0, -128),
+        Long.MAX_VALUE to byteArrayOf(-1, -1, -1, -1, -1, -1, -1, 127),
+        0L to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0),
+      )
     val data = ByteArray(Long.SIZE_BYTES)
     testSet.forEach {
       data.setLong(0, it.first)
@@ -89,12 +92,13 @@ class ByteArrayTest {
 
   @Test
   fun testULong() {
-    val testSet = arrayOf(
-      1234567123122890123UL to byteArrayOf(-117, -91, 29, -23, 65, 16, 34, 17),
-      ULong.MIN_VALUE to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0),
-      (-1L).toULong() to byteArrayOf(-1, -1, -1, -1, -1, -1, -1, -1),
-      0UL to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)
-    )
+    val testSet =
+      arrayOf(
+        1234567123122890123UL to byteArrayOf(-117, -91, 29, -23, 65, 16, 34, 17),
+        ULong.MIN_VALUE to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0),
+        (-1L).toULong() to byteArrayOf(-1, -1, -1, -1, -1, -1, -1, -1),
+        0UL to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0),
+      )
     val data = ByteArray(ULong.SIZE_BYTES)
     testSet.forEach {
       data.setULong(0, it.first)
@@ -105,12 +109,13 @@ class ByteArrayTest {
 
   @Test
   fun testFloat() {
-    val testSet = arrayOf(
-      3545.56337f to byteArrayOf(4, -103, 93, 69),
-      Float.MIN_VALUE to byteArrayOf(1, 0, 0, 0),
-      Float.MAX_VALUE to byteArrayOf(-1, -1, 127, 127),
-      0f to byteArrayOf(0, 0, 0, 0)
-    )
+    val testSet =
+      arrayOf(
+        3545.56337f to byteArrayOf(4, -103, 93, 69),
+        Float.MIN_VALUE to byteArrayOf(1, 0, 0, 0),
+        Float.MAX_VALUE to byteArrayOf(-1, -1, 127, 127),
+        0f to byteArrayOf(0, 0, 0, 0),
+      )
     val data = ByteArray(Float.SIZE_BYTES)
     testSet.forEach {
       data.setFloat(0, it.first)
@@ -120,12 +125,13 @@ class ByteArrayTest {
 
   @Test
   fun testDouble() {
-    val testSet = arrayOf(
-      123456.523423423412 to byteArrayOf(88, 61, -15, 95, 8, 36, -2, 64),
-      Double.MIN_VALUE to byteArrayOf(1, 0, 0, 0, 0, 0, 0, 0),
-      Double.MAX_VALUE to byteArrayOf(-1, -1, -1, -1, -1, -1, -17, 127),
-      0.0 to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)
-    )
+    val testSet =
+      arrayOf(
+        123456.523423423412 to byteArrayOf(88, 61, -15, 95, 8, 36, -2, 64),
+        Double.MIN_VALUE to byteArrayOf(1, 0, 0, 0, 0, 0, 0, 0),
+        Double.MAX_VALUE to byteArrayOf(-1, -1, -1, -1, -1, -1, -17, 127),
+        0.0 to byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0),
+      )
     val data = ByteArray(Long.SIZE_BYTES)
     testSet.forEach {
       data.setDouble(0, it.first)
@@ -139,60 +145,8 @@ class ByteArrayTest {
     val testSet = "∮ E⋅da = Q"
     val encoded = testSet.encodeToByteArray()
     val data = ByteArray(encoded.size)
-    data.setString(0, testSet)
+    data.setCharSequence(0, testSet)
     assertArrayEquals(encoded, data)
     assertEquals(testSet, data.getString(0, encoded.size))
   }
-}
-
-fun <T> assertArrayEquals(expected: Array<out T>, actual: Array<out T>) =
-  assertTrue(expected contentEquals actual, arrayFailMessage(expected, actual))
-
-fun assertArrayEquals(expected: IntArray, actual: IntArray) =
-  assertTrue(expected contentEquals actual, arrayFailMessage(expected, actual))
-
-fun assertArrayEquals(expected: ShortArray, actual: ShortArray) =
-  assertTrue(expected contentEquals actual, arrayFailMessage(expected, actual))
-
-fun assertArrayEquals(expected: LongArray, actual: LongArray) =
-  assertTrue(expected contentEquals actual, arrayFailMessage(expected, actual))
-
-fun assertArrayEquals(expected: ByteArray, actual: ByteArray) =
-  assertTrue(expected contentEquals actual, arrayFailMessage(expected, actual))
-
-fun assertArrayEquals(expected: DoubleArray, actual: DoubleArray) =
-  assertTrue(expected contentEquals actual, arrayFailMessage(expected, actual))
-
-fun assertArrayEquals(expected: FloatArray, actual: FloatArray) =
-  assertTrue(expected contentEquals actual, arrayFailMessage(expected, actual))
-
-fun <T> arrayFailMessage(expected: Array<out T>, actual: Array<out T>): String =
-  failMessage(expected.contentToString(), actual.contentToString())
-
-fun arrayFailMessage(expected: IntArray, actual: IntArray): String =
-  failMessage(expected.contentToString(), actual.contentToString())
-
-fun arrayFailMessage(expected: ShortArray, actual: ShortArray): String =
-  failMessage(expected.contentToString(), actual.contentToString())
-
-fun arrayFailMessage(expected: LongArray, actual: LongArray): String =
-  failMessage(expected.contentToString(), actual.contentToString())
-
-fun failMessage(expected: String, actual: String): String =
-  "Expected: $expected\nActual: $actual"
-
-fun arrayFailMessage(expected: FloatArray, actual: FloatArray): String {
-  return "Expected: ${expected.contentToString()}\nActual: ${actual.contentToString()}"
-}
-
-fun arrayFailMessage(expected: DoubleArray, actual: DoubleArray): String {
-  return "Expected: ${expected.contentToString()}\nActual: ${actual.contentToString()}"
-}
-
-fun arrayFailMessage(expected: BooleanArray, actual: BooleanArray): String {
-  return "Expected: ${expected.contentToString()}\nActual: ${actual.contentToString()}"
-}
-
-fun arrayFailMessage(expected: ByteArray, actual: ByteArray): String {
-  return "Expected: ${expected.contentToString()}\nActual: ${actual.contentToString()}"
 }

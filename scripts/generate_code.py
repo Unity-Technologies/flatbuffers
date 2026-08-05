@@ -14,100 +14,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import filecmp
 import glob
-import platform
+from pathlib import Path
 import shutil
 import subprocess
 import generate_grpc_examples
-from pathlib import Path
-
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--flatc",
-    help="path of the Flat C compiler relative to the root directory",
-)
-parser.add_argument("--cpp-0x", action="store_true", help="use --cpp-std c++ox")
-parser.add_argument(
-    "--skip-monster-extra",
-    action="store_true",
-    help="skip generating tests involving monster_extra.fbs",
-)
-parser.add_argument(
-    "--skip-gen-reflection",
-    action="store_true",
-    help="skip generating the reflection.fbs files",
-)
-args = parser.parse_args()
-
-# Get the path where this script is located so we can invoke the script from
-# any directory and have the paths work correctly.
-script_path = Path(__file__).parent.resolve()
-
-# Get the root path as an absolute path, so all derived paths are absolute.
-root_path = script_path.parent.absolute()
-
-# Get the location of the flatc executable, reading from the first command line
-# argument or defaulting to default names.
-flatc_exe = Path(
-    ("flatc" if not platform.system() == "Windows" else "flatc.exe")
-    if not args.flatc
-    else args.flatc
-)
-
-# Find and assert flatc compiler is present.
-if root_path in flatc_exe.parents:
-    flatc_exe = flatc_exe.relative_to(root_path)
-flatc_path = Path(root_path, flatc_exe)
-assert flatc_path.exists(), "Cannot find the flatc compiler " + str(flatc_path)
+from util import args, flatc, flatc_path, root_path, tests_path
 
 # Specify the other paths that will be referenced
-tests_path = Path(root_path, "tests")
-swift_code_gen = Path(root_path, "tests/swift/tests/CodeGenerationTests")
+swift_code_gen = Path(root_path, "tests/swift/fuzzer/CodeGenerationTests")
+ts_code_gen = Path(root_path, "tests/ts")
 samples_path = Path(root_path, "samples")
 reflection_path = Path(root_path, "reflection")
-
-# Execute the flatc compiler with the specified parameters
-def flatc(options, schema, prefix=None, include=None, data=None, cwd=tests_path):
-    cmd = [str(flatc_path)] + options
-    if prefix:
-        cmd += ["-o"] + [prefix]
-    if include:
-        cmd += ["-I"] + [include]
-    cmd += [schema] if isinstance(schema, str) else schema
-    if data:
-        cmd += [data] if isinstance(data, str) else data
-    result = subprocess.run(cmd, cwd=str(cwd), check=True)
 
 
 # Generate the code for flatbuffers reflection schema
 def flatc_reflection(options, location, target):
-    full_options = ["--no-prefix"] + options
-    temp_dir = ".tmp"
-    flatc(
-        full_options,
-        prefix=temp_dir,
-        schema="reflection.fbs",
-        cwd=reflection_path,
-    )
-    new_reflection_path = Path(reflection_path, temp_dir, target)
-    original_reflection_path = Path(root_path, location, target)
-    if not filecmp.cmp(str(new_reflection_path), str(original_reflection_path)):
-        shutil.rmtree(str(original_reflection_path), ignore_errors=True)
-        shutil.move(str(new_reflection_path), str(original_reflection_path))
-    shutil.rmtree(str(Path(reflection_path, temp_dir)))
+  full_options = ["--no-prefix"] + options
+  temp_dir = ".tmp"
+  flatc(
+      full_options,
+      prefix=temp_dir,
+      schema="reflection.fbs",
+      cwd=reflection_path,
+  )
+  new_reflection_path = Path(reflection_path, temp_dir, target)
+  original_reflection_path = Path(root_path, location, target)
+  if not filecmp.cmp(str(new_reflection_path), str(original_reflection_path)):
+    shutil.rmtree(str(original_reflection_path), ignore_errors=True)
+    shutil.move(str(new_reflection_path), str(original_reflection_path))
+  shutil.rmtree(str(Path(reflection_path, temp_dir)))
+
 
 def flatc_annotate(schema, file, include=None, cwd=tests_path):
-    cmd = [str(flatc_path)]
-    if include:
-        cmd += ["-I"] + [include]
-    cmd += ["--annotate", schema, file]
-    result = subprocess.run(cmd, cwd=str(cwd), check=True)
+  cmd = [str(flatc_path)]
+  if include:
+    cmd += ["-I"] + [include]
+  cmd += ["--annotate", schema, file]
+  result = subprocess.run(cmd, cwd=str(cwd), check=True)
+
 
 # Glob a pattern relative to file path
 def glob(path, pattern):
-    return [str(p) for p in path.glob(pattern)]
+  return [str(p) for p in path.glob(pattern)]
 
 
 # flatc options that are shared
@@ -119,8 +69,7 @@ CS_OPTS = ["--csharp", "--cs-gen-json-serializer"]
 CPP_OPTS = [
     "--cpp",
     "--gen-compare",
-    "--cpp-ptr-type",
-    "flatbuffers::unique_ptr",
+    "--gen-absl-hash",
 ] + (["--cpp-std", "c++0x"] if args.cpp_0x else [])
 
 CPP_17_OPTS = NO_INCL_OPTS + [
@@ -150,14 +99,15 @@ SWIFT_OPTS_CODE_GEN = [
     "--swift",
     "--gen-json-emit",
     "--bfbs-filenames",
-    swift_code_gen
+    str(swift_code_gen),
 ]
 JAVA_OPTS = ["--java"]
 KOTLIN_OPTS = ["--kotlin"]
 PHP_OPTS = ["--php"]
 DART_OPTS = ["--dart"]
-PYTHON_OPTS = ["--python"]
+PYTHON_OPTS = ["--python", "--python-typing", "--python-decode-obj-api-strings"]
 BINARY_OPTS = ["-b", "--schema", "--bfbs-comments", "--bfbs-builtins"]
+PROTO_OPTS = ["--proto"]
 
 # Basic Usage
 
@@ -180,12 +130,23 @@ flatc(
 )
 
 flatc(
-    NO_INCL_OPTS
-    + TS_OPTS,
-    schema="monster_test.fbs",
-    prefix="ts",
+    NO_INCL_OPTS + DART_OPTS,
+    schema="include_test/include_test1.fbs",
+    include="include_test/sub",
+)
+
+flatc(
+    NO_INCL_OPTS + DART_OPTS,
+    schema="include_test/sub/include_test2.fbs",
     include="include_test",
-    data="monsterdata_test.json",
+)
+
+flatc(
+    NO_INCL_OPTS + TS_OPTS,
+    cwd=ts_code_gen,
+    schema="../monster_test.fbs",
+    include="../include_test",
+    data="../monsterdata_test.json",
 )
 
 flatc(
@@ -194,11 +155,26 @@ flatc(
     include="include_test",
 )
 
+"""NOTE: The C++ gRPC golden is generated with the callback API enabled so that
+the repository goldens exercise the callback client & server code paths.
+If you need the legacy (non-callback) variant for comparison, invoke flatc
+manually without --grpc-callback-api; we intentionally do not keep both to
+minimize golden churn."""
 flatc(
-    NO_INCL_OPTS + CPP_OPTS + ["--grpc"],
+    NO_INCL_OPTS + CPP_OPTS + ["--grpc", "--grpc-callback-api"],
     schema="monster_test.fbs",
     include="include_test",
     data="monsterdata_test.json",
+)
+
+# Also generate a suffix variant exercising the callback API to keep prior
+# *_generated naming convention in sync with new callback additions.
+flatc(
+    NO_INCL_OPTS
+    + CPP_OPTS
+    + ["--grpc", "--grpc-callback-api", "--filename-suffix", "_generated"],
+    schema="monster_test.fbs",
+    include="include_test",
 )
 
 flatc(
@@ -231,6 +207,11 @@ flatc(
     data="monsterdata_test.json",
 )
 
+flatc(
+    PROTO_OPTS,
+    schema="prototest/test.proto",
+)
+
 # For Rust we currently generate two independent schemas, with namespace_test2
 # duplicating the types in namespace_test1
 flatc(
@@ -243,6 +224,29 @@ flatc(
 )
 
 flatc(
+    [
+        "--cpp",
+        "--reflect-names",
+        "--no-includes",
+        "--gen-mutable",
+        "--gen-object-api",
+        "--gen-compare",
+        "--gen-name-strings",
+    ],
+    prefix="namespace_test",
+    schema=[
+        "namespace_test/namespace_test1.fbs",
+        "namespace_test/namespace_test2.fbs",
+    ],
+)
+
+flatc(
+    BASE_OPTS + CPP_OPTS + ["--cpp-ptr-type", "naked"],
+    prefix="vector_table_naked_ptr",
+    schema="vector_table_naked_ptr.fbs",
+)
+
+flatc(
     BASE_OPTS + CPP_OPTS + CS_OPTS + JAVA_OPTS + KOTLIN_OPTS + PHP_OPTS,
     prefix="union_vector",
     schema="union_vector/union_vector.fbs",
@@ -250,37 +254,31 @@ flatc(
 
 flatc(
     BASE_OPTS + TS_OPTS,
-    prefix="ts/union_vector",
-    schema="union_vector/union_vector.fbs",
+    cwd=ts_code_gen,
+    prefix="union_vector",
+    schema="../union_vector/union_vector.fbs",
 )
 
 flatc(
     BASE_OPTS + TS_OPTS + ["--gen-name-strings", "--gen-mutable"],
-    include="include_test",
-    prefix="ts",
-    schema="monster_test.fbs",
-)
-
-# Generate the complete flat file TS of monster.
-flatc(
-    ["--ts", "--gen-all", "--ts-flat-files"],
-    include="include_test",
-    schema="monster_test.fbs",
-    prefix="ts/ts-flat-files"
+    cwd=ts_code_gen,
+    include="../include_test",
+    schema="../monster_test.fbs",
 )
 
 flatc(
     BASE_OPTS + TS_OPTS + ["-b"],
-    include="include_test",
-    prefix="ts",
-    schema="monster_test.fbs",
-    data="unicode_test.json",
+    cwd=ts_code_gen,
+    include="../include_test",
+    schema="../monster_test.fbs",
+    data="../unicode_test.json",
 )
 
 flatc(
     BASE_OPTS + TS_OPTS + ["--gen-name-strings"],
-    prefix="ts/union_vector",
-    schema="union_vector/union_vector.fbs",
+    cwd=ts_code_gen,
+    prefix="union_vector",
+    schema="../union_vector/union_vector.fbs",
 )
 
 flatc(
@@ -307,13 +305,13 @@ flatc(
 flatc_annotate(
     schema="../reflection/reflection.fbs",
     file="monster_test.bfbs",
-    include="include_test"
+    include="include_test",
 )
 
 flatc_annotate(
     schema="monster_test.fbs",
     file="monsterdata_test.mon",
-    include="include_test"
+    include="include_test",
 )
 
 flatc(
@@ -343,26 +341,52 @@ flatc(
 )
 
 if not args.skip_monster_extra:
-    flatc(
-        CPP_OPTS + CS_OPTS + NO_INCL_OPTS + JAVA_OPTS + KOTLIN_OPTS + PYTHON_OPTS,
-        schema="monster_extra.fbs",
-        data="monsterdata_extra.json",
-    )
+  flatc(
+      CPP_OPTS + CS_OPTS + NO_INCL_OPTS + JAVA_OPTS + KOTLIN_OPTS + PYTHON_OPTS,
+      schema="monster_extra.fbs",
+      data="monsterdata_extra.json",
+  )
 
-    flatc(
-        DART_OPTS + ["--gen-object-api"],
-        schema="monster_extra.fbs",
-    )
+  flatc(
+      DART_OPTS + ["--gen-object-api"],
+      schema="monster_extra.fbs",
+  )
 
 flatc(
-    CPP_OPTS + CS_OPTS + NO_INCL_OPTS + JAVA_OPTS + ["--jsonschema", "--scoped-enums"],
+    CPP_OPTS
+    + CS_OPTS
+    + NO_INCL_OPTS
+    + JAVA_OPTS
+    + ["--jsonschema", "--scoped-enums"],
     schema="arrays_test.fbs",
+)
+
+flatc(
+    ["--cpp", "--gen-compare", "--gen-mutable", "--gen-object-api", "--reflect-names"],
+    schema="native_type_test.fbs",
+)
+
+flatc(
+    [
+        "--cpp",
+        "--gen-mutable",
+        "--gen-compare",
+        "--gen-object-api",
+        "--reflect-names",
+    ],
+    schema="native_inline_table_test.fbs",
 )
 
 flatc(
     RUST_OPTS,
     prefix="arrays_test",
     schema="arrays_test.fbs",
+)
+
+flatc(
+    RUST_OPTS,
+    prefix="rust_namer_test",
+    schema="rust_namer_test.fbs",
 )
 
 flatc(
@@ -376,13 +400,19 @@ flatc(
     schema="nested_union_test.fbs",
 )
 
+flatc(
+    NO_INCL_OPTS + CPP_OPTS,
+    schema="default_vectors_strings_test.fbs",
+)
 
 # Optional Scalars
 optional_scalars_schema = "optional_scalars.fbs"
 flatc(["--java", "--kotlin", "--lobster"], schema=optional_scalars_schema)
-flatc(TS_OPTS, schema=optional_scalars_schema, prefix="ts")
+flatc(TS_OPTS, cwd=ts_code_gen, schema="../optional_scalars.fbs")
 
-flatc(["--csharp", "--python", "--gen-object-api"], schema=optional_scalars_schema)
+flatc(
+    ["--csharp", "--python", "--gen-object-api"], schema=optional_scalars_schema
+)
 
 flatc(RUST_OPTS, prefix="optional_scalars", schema=optional_scalars_schema)
 
@@ -392,6 +422,13 @@ flatc(NO_INCL_OPTS + CPP_OPTS, schema=optional_scalars_schema)
 type_field_collsion_schema = "type_field_collsion.fbs"
 
 flatc(["--csharp", "--gen-object-api"], schema=type_field_collsion_schema)
+
+# Union / value collision
+flatc(
+    CS_OPTS + ["--gen-object-api", "--gen-onefile"],
+    prefix="union_value_collsion",
+    schema="union_value_collision.fbs",
+)
 
 # Generate string/vector default code for tests
 flatc(RUST_OPTS, prefix="more_defaults", schema="more_defaults.fbs")
@@ -418,13 +455,20 @@ dictionary_lookup_schema = "dictionary_lookup.fbs"
 flatc(["--java", "--kotlin"], schema=dictionary_lookup_schema)
 
 # Swift Tests
-swift_prefix = "swift/tests/Tests/FlatBuffers.Test.SwiftTests"
+swift_prefix = "swift/Tests/Flatbuffers"
 flatc(
     SWIFT_OPTS + BASE_OPTS + ["--grpc"],
     schema="monster_test.fbs",
     include="include_test",
     prefix=swift_prefix,
 )
+
+flatc(
+    SWIFT_OPTS + BASE_OPTS,
+    schema="arrays_test.fbs",
+    prefix=swift_prefix,
+)
+
 flatc(
     SWIFT_OPTS + BASE_OPTS,
     schema="union_vector/union_vector.fbs",
@@ -432,6 +476,7 @@ flatc(
 )
 flatc(SWIFT_OPTS, schema="optional_scalars.fbs", prefix=swift_prefix)
 flatc(SWIFT_OPTS, schema="vector_has_test.fbs", prefix=swift_prefix)
+flatc(SWIFT_OPTS, schema="nan_inf_test.fbs", prefix=swift_prefix)
 flatc(
     SWIFT_OPTS + ["--gen-object-api"],
     schema="more_defaults.fbs",
@@ -446,13 +491,22 @@ flatc(
 flatc(
     SWIFT_OPTS_CODE_GEN + BASE_OPTS + ["--grpc", "--swift-implementation-only"],
     schema="test_import.fbs",
-    cwd=swift_code_gen
+    cwd=swift_code_gen,
 )
 
 flatc(
     SWIFT_OPTS_CODE_GEN + NO_INCL_OPTS + ["--grpc"],
     schema="test_no_include.fbs",
-    cwd=swift_code_gen
+    cwd=swift_code_gen,
+)
+
+# Swift Wasm Tests
+swift_Wasm_prefix = "swift/Wasm.tests/Tests/FlatBuffers.Test.Swift.WasmTests"
+flatc(
+    SWIFT_OPTS + BASE_OPTS,
+    schema="monster_test.fbs",
+    include="include_test",
+    prefix=swift_Wasm_prefix,
 )
 
 # Nim Tests
@@ -476,7 +530,9 @@ flatc(
     schema="monster_test.fbs",
 )
 flatc(
-    CPP_OPTS + NO_INCL_OPTS + ["--grpc", "--filename-suffix", "_suffix", "--filename-ext", "hpp"],
+    CPP_OPTS
+    + NO_INCL_OPTS
+    + ["--grpc", "--filename-suffix", "_suffix", "--filename-ext", "hpp"],
     include="include_test",
     prefix="monster_test_suffix",
     schema="monster_test.fbs",
@@ -504,12 +560,22 @@ flatc(
 # Private annotations
 annotations_test_schema = "private_annotation_test.fbs"
 
-flatc(RUST_OPTS + ["--no-leak-private-annotation", "--gen-object-api"], prefix="private_annotation_test", schema=annotations_test_schema)
+flatc(
+    RUST_OPTS + ["--no-leak-private-annotation", "--gen-object-api"],
+    prefix="private_annotation_test",
+    schema=annotations_test_schema,
+)
 
 # Sample files
 samples_schema = "monster.fbs"
-flatc(BASE_OPTS + CPP_OPTS + LOBSTER_OPTS, schema=samples_schema, cwd=samples_path)
-flatc(RUST_OPTS, prefix="rust_generated", schema=samples_schema, cwd=samples_path)
+flatc(
+    BASE_OPTS + CPP_OPTS + LOBSTER_OPTS + SWIFT_OPTS,
+    schema=samples_schema,
+    cwd=samples_path,
+)
+flatc(
+    RUST_OPTS, prefix="rust_generated", schema=samples_schema, cwd=samples_path
+)
 flatc(
     BINARY_OPTS + ["--bfbs-filenames", str(samples_path)],
     schema=samples_schema,
@@ -521,29 +587,40 @@ flatc(
 # Skip generating the reflection if told too, as we run this script after
 # building flatc which uses the reflection_generated.h itself.
 if not args.skip_gen_reflection:
-    # C++ Reflection
-    flatc_reflection(
-        ["-c", "--cpp-std", "c++0x"], "include/flatbuffers", "reflection_generated.h"
-    )
+  # C++ Reflection
+  flatc_reflection(
+      ["-c", "--cpp-std", "c++0x"],
+      "include/flatbuffers",
+      "reflection_generated.h",
+  )
 
 # Python Reflection
 flatc_reflection(["-p"], "python/flatbuffers", "reflection")
+
+# Java Reflection
+flatc_reflection(
+    ["-j", "--java-package-prefix", "com.google.flatbuffers"],
+    "java/src/main/java",
+    "com/google/flatbuffers/reflection",
+)
 
 # Annotation
 
 
 def flatc_annotate(schema, include=None, data=None, cwd=tests_path):
-    cmd = [str(flatc_path)]
-    if include:
-        cmd += ["-I"] + [include]
-    cmd += ["--annotate", schema]
-    if data:
-        cmd += [data] if isinstance(data, str) else data
-    subprocess.run(cmd, cwd=str(cwd), check=True)
+  cmd = [str(flatc_path)]
+  if include:
+    cmd += ["-I"] + [include]
+  cmd += ["--annotate", schema]
+  if data:
+    cmd += [data] if isinstance(data, str) else data
+  subprocess.run(cmd, cwd=str(cwd), check=True)
 
 
 flatc_annotate(
-    schema="monster_test.fbs", include="include_test", data="monsterdata_test.mon"
+    schema="monster_test.fbs",
+    include="include_test",
+    data="monsterdata_test.mon",
 )
 
 # Run the generate_grpc_examples script

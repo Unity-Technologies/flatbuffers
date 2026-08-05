@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google Inc. All rights reserved.
+ * Copyright 2024 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-#if !os(WASI)
 import Foundation
-#else
-import SwiftOverlayShims
-#endif
 
 /// `VerifierOptions` is a set of options to verify a flatbuffer
 public struct VerifierOptions {
@@ -43,7 +39,7 @@ public struct VerifierOptions {
   ///   - ignoreMissingNullTerminators: Ignoring missing null terminals in strings *Currently not supported in swift*
   public init(
     maxDepth: UOffset = 64,
-    maxTableCount: UOffset = 1000000,
+    maxTableCount: UOffset = 1_000_000,
     maxApparentSize: UOffset = 1 << 31,
     ignoreMissingNullTerminators: Bool = false)
   {

@@ -20,13 +20,13 @@
 #include <memory>
 #include <string>
 
-#include "flatbuffers/bfbs_generator.h"
+#include "flatbuffers/code_generator.h"
 
 namespace flatbuffers {
 
 // Constructs a new Nim Code generator.
-std::unique_ptr<BfbsGenerator> NewNimBfbsGenerator(
-    const std::string &flatc_version);
+std::unique_ptr<CodeGenerator> NewNimBfbsGenerator(
+    const std::string& flatc_version);
 
 }  // namespace flatbuffers
 

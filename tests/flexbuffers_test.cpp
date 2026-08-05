@@ -1,5 +1,7 @@
 #include "flexbuffers_test.h"
 
+#include <limits>
+
 #include "flatbuffers/flexbuffers.h"
 #include "flatbuffers/idl.h"
 #include "is_quiet_nan.h"
@@ -26,15 +28,15 @@ void FlexBuffersTest() {
       slb += "Fred";
       slb.IndirectFloat(4.0f);
       auto i_f = slb.LastValue();
-      uint8_t blob[] = { 77 };
+      uint8_t blob[] = {77};
       slb.Blob(blob, 1);
       slb += false;
       slb.ReuseValue(i_f);
     });
-    int ints[] = { 1, 2, 3 };
+    int ints[] = {1, 2, 3};
     slb.Vector("bar", ints, 3);
     slb.FixedTypedVector("bar3", ints, 3);
-    bool bools[] = { true, false, true, false };
+    bool bools[] = {true, false, true, false};
     slb.Vector("bools", bools, 4);
     slb.Bool("bool", true);
     slb.Double("foo", 100);
@@ -130,6 +132,13 @@ void FlexBuffersTest() {
   // And from FlexBuffer back to JSON:
   auto jsonback = jroot.ToString();
   TEST_EQ_STR(jsontest, jsonback.c_str());
+  // With indentation:
+  std::string jsonback_indented;
+  jroot.ToString(true, false, jsonback_indented, true, 0, "  ");
+  auto jsontest_indented =
+      "{\n  a: [\n    123,\n    456.0\n  ],\n  b: \"hello\",\n  c: true,\n  d: "
+      "false\n}";
+  TEST_EQ_STR(jsontest_indented, jsonback_indented.c_str());
 
   slb.Clear();
   slb.Vector([&]() {
