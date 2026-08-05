@@ -6,15 +6,6 @@
 # See .github/workflows/label.yml for Github Action workflow script
 - uses: actions/labeler@v5
 
-"c#":
-  - any:
-      - changed-files:
-          - any-glob-to-any-file:
-              - '**/*.cs'
-              - 'net/**/*'
-              - 'tests/FlatBuffers.Test/**/*'
-              - 'tests/FlatBuffers.Benchmarks/**/*'
-              - 'src/idl_gen_csharp.cpp'
 
 swift:
   - changed-files:
