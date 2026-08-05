@@ -5,7 +5,7 @@
 #
 # See .github/workflows/label.yml for Github Action workflow script
 
-"c#":
+c-sharp:
   - changed-files:
       - any-glob-to-any-file:
           - '**/*.cs'
@@ -100,7 +100,7 @@ dart:
           - '**/*.dart'
           - 'src/idl_gen_dart.cpp'
 
-"c++":
+cpp:
   - changed-files:
       - any-glob-to-any-file:
           - '**/*.cc'
