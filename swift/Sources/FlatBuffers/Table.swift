@@ -112,22 +112,6 @@ public struct Table {
     return bb.readSlice(index: Int(vector(at: o)), count: Int(vector(count: o)))
   }
 
-  /// Returns an UnsafeBufferPointer of type T direct to the memory inside the buffer
-  public func getBufferPointer<T>(at off: Int32) -> UnsafeBufferPointer<T>? {
-    let o = offset(off)
-    guard o != 0 else { return nil }
-    let bufOffset = Int(vector(at: o))
-    let count = Int(vector(count: o))
-    return bb.withUnsafePointerToSlice(
-      index: bufOffset,
-      count: count &* MemoryLayout<T>.stride)
-    { rawBuffer in
-      UnsafeBufferPointer<T>(
-        start: rawBuffer.baseAddress?.assumingMemoryBound(to: T.self),
-        count: count)
-    }
-  }
-
   public func vector<T>(at off: Int32, byteSize: Int) -> FlatbufferVector<T> {
     let off = offset(off)
     return FlatbufferVector(

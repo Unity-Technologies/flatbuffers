@@ -912,9 +912,6 @@ class SwiftGenerator : public BaseGenerator {
 
     if (IsScalar(vectortype.base_type) && !IsEnum(vectortype) &&
         !IsBool(field.value.type.base_type)) {
-      code_ +=
-          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}>? { return "
-          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) }";
       if (parser_.opts.mutable_buffer) code_ += GenMutateArray();
       GenUnsafeBufferPointer(field);
       return;
@@ -922,10 +919,6 @@ class SwiftGenerator : public BaseGenerator {
 
     if (vectortype.base_type == BASE_TYPE_STRUCT &&
         field.value.type.struct_def->fixed) {
-      // do this before we swap to mutable, we don't want the mutable version
-      code_ +=
-          "{{ACCESS_TYPE}} var {{FIELDVAR}}AsBuffer: UnsafeBufferPointer<{{VALUETYPE}}>? { return "
-          "{{ACCESS}}.getBufferPointer(at: {{TABLEOFFSET}}.{{OFFSET}}.v) }";
       code_.SetValue("FIELDVAR", namer_.Method("mutable", field));
       code_ +=
           "{{ACCESS_TYPE}} var {{FIELDVAR}}: "

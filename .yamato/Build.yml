@@ -4,6 +4,7 @@ all:
     - .yamato/Build.yml#build_linux
     - .yamato/Build.yml#build_windows
     - .yamato/Build.yml#build_osx_universal
+    - .yamato/Build.yml#check_generated_code
 
 build_linux:
   name: Build - Linux
@@ -54,3 +55,19 @@ build_osx_universal:
     reported_artifacts:
       paths:
         - Release/flatc
+
+check_generated_code:
+  name: Check - Generated Code
+  agent:
+    type: Unity::VM
+    image: platform-foundation/linux-ubuntu-18.04-mono-bokken:0.1.7-978398
+    flavor: b1.xlarge
+    config:
+      env_vars:
+        - PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin
+  commands:
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DFLATBUFFERS_BUILD_TESTS=OFF
+    - cmake --build . --config Release
+    - python3 scripts/check_generate_code.py
+    - python3 scripts/check-grpc-generated-code.py
+  timeout: 30

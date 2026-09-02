@@ -360,9 +360,6 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Rapunzel FLATBUFFERS_FINAL_CLASS {
   static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return RapunzelTypeTable();
   }
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "Rapunzel";
-  }
   Rapunzel()
       : hair_length_(0) {
   }
@@ -399,9 +396,6 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) BookReader FLATBUFFERS_FINAL_CLASS {
  public:
   static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return BookReaderTypeTable();
-  }
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "BookReader";
   }
   BookReader()
       : books_read_(0) {
@@ -440,9 +434,6 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) FallingTub FLATBUFFERS_FINAL_CLASS {
   static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return FallingTubTypeTable();
   }
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "FallingTub";
-  }
   FallingTub()
       : weight_(0) {
   }
@@ -474,9 +465,6 @@ inline H AbslHashValue(H h, const FallingTub &obj) {
 
 struct AttackerT : public ::flatbuffers::NativeTable {
   typedef Attacker TableType;
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "AttackerT";
-  }
   int32_t sword_attack_damage = 0;
 };
 
@@ -485,9 +473,6 @@ struct Attacker FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AttackerBuilder Builder;
   static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return AttackerTypeTable();
-  }
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "Attacker";
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SWORD_ATTACK_DAMAGE = 4
@@ -539,9 +524,6 @@ inline ::flatbuffers::Offset<Attacker> CreateAttacker(
 
 struct HandFanT : public ::flatbuffers::NativeTable {
   typedef HandFan TableType;
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "HandFanT";
-  }
   int32_t length = 0;
 };
 
@@ -550,9 +532,6 @@ struct HandFan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef HandFanBuilder Builder;
   static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return HandFanTypeTable();
-  }
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "HandFan";
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_LENGTH = 4
@@ -604,9 +583,6 @@ inline ::flatbuffers::Offset<HandFan> CreateHandFan(
 
 struct MovieT : public ::flatbuffers::NativeTable {
   typedef Movie TableType;
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "MovieT";
-  }
   CharacterUnion main_character{};
   std::vector<CharacterUnion> characters{};
 };
@@ -616,9 +592,6 @@ struct Movie FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef MovieBuilder Builder;
   static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
     return MovieTypeTable();
-  }
-  static FLATBUFFERS_CONSTEXPR_CPP11 const char *GetFullyQualifiedName() {
-    return "Movie";
   }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_MAIN_CHARACTER_TYPE = 4,

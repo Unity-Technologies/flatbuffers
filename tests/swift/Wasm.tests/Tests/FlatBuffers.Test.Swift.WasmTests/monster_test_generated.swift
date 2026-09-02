@@ -9,29 +9,32 @@ import Common
 import FlatBuffers
 
 ///  Composite components of Monster color.
-public enum MyGame_Example_Color: UInt8, FlatbuffersVectorInitializable, Enum, Verifiable {
+public struct MyGame_Example_Color: OptionSet, Enum, Verifiable {
   public typealias T = UInt8
+  public let rawValue: T
+
+  public init(rawValue: T) {
+    self.rawValue = rawValue
+  }
+
   public static var byteSize: Int { return MemoryLayout<UInt8>.size }
   public var value: UInt8 { return self.rawValue }
-  case red = 1
+  public static let red = MyGame_Example_Color(rawValue: 1)
   ///  \brief color Green
   ///  Green is bit_flag with value (1u << 1)
-  case green = 2
+  public static let green = MyGame_Example_Color(rawValue: 2)
   ///  \brief color Blue (1u << 3)
-  case blue = 8
+  public static let blue = MyGame_Example_Color(rawValue: 8)
 
-  public static var max: MyGame_Example_Color { return .blue }
-  public static var min: MyGame_Example_Color { return .red }
+  public static let none: MyGame_Example_Color = []
+  public static let all: MyGame_Example_Color = [.red, .green, .blue]
+  public static var min: MyGame_Example_Color { [] }
 }
 
 extension MyGame_Example_Color: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
-    switch self {
-    case .red: try container.encode("Red")
-    case .green: try container.encode("Green")
-    case .blue: try container.encode("Blue")
-    }
+    try container.encode(rawValue)
   }
 }
 
@@ -60,26 +63,29 @@ extension MyGame_Example_Race: Encodable {
   }
 }
 
-public enum MyGame_Example_LongEnum: UInt64, FlatbuffersVectorInitializable, Enum, Verifiable {
+public struct MyGame_Example_LongEnum: OptionSet, Enum, Verifiable {
   public typealias T = UInt64
+  public let rawValue: T
+
+  public init(rawValue: T) {
+    self.rawValue = rawValue
+  }
+
   public static var byteSize: Int { return MemoryLayout<UInt64>.size }
   public var value: UInt64 { return self.rawValue }
-  case longone = 2
-  case longtwo = 4
-  case longbig = 1099511627776
+  public static let longone = MyGame_Example_LongEnum(rawValue: 2)
+  public static let longtwo = MyGame_Example_LongEnum(rawValue: 4)
+  public static let longbig = MyGame_Example_LongEnum(rawValue: 1099511627776)
 
-  public static var max: MyGame_Example_LongEnum { return .longbig }
-  public static var min: MyGame_Example_LongEnum { return .longone }
+  public static let none: MyGame_Example_LongEnum = []
+  public static let all: MyGame_Example_LongEnum = [.longone, .longtwo, .longbig]
+  public static var min: MyGame_Example_LongEnum { [] }
 }
 
 extension MyGame_Example_LongEnum: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
-    switch self {
-    case .longone: try container.encode("LongOne")
-    case .longtwo: try container.encode("LongTwo")
-    case .longbig: try container.encode("LongBig")
-    }
+    try container.encode(rawValue)
   }
 }
 
@@ -367,7 +373,7 @@ public struct MyGame_Example_Vec3: NativeStruct, FlatbuffersVectorInitializable,
   public var y: Float32 { _y }
   public var z: Float32 { _z }
   public var test1: Double { _test1 }
-  public var test2: MyGame_Example_Color { MyGame_Example_Color(rawValue: _test2)! }
+  public var test2: MyGame_Example_Color { MyGame_Example_Color(rawValue: _test2) }
   public var test3: MyGame_Example_Test { _test3 }
 
   public static func verify<T>(_ verifier: inout Verifier, at position: Int, of type: T.Type) throws where T: Verifiable {
@@ -422,7 +428,7 @@ public struct MyGame_Example_Vec3_Mutable: FlatBufferStruct, FlatbuffersVectorIn
   @discardableResult public func mutate(z: Float32) -> Bool { return _accessor.mutate(z, index: 8) }
   public var test1: Double { return _accessor.readBuffer(of: Double.self, at: 16) }
   @discardableResult public func mutate(test1: Double) -> Bool { return _accessor.mutate(test1, index: 16) }
-  public var test2: MyGame_Example_Color { return MyGame_Example_Color(rawValue: _accessor.readBuffer(of: UInt8.self, at: 24)) ?? .red }
+  public var test2: MyGame_Example_Color { return MyGame_Example_Color(rawValue: _accessor.readBuffer(of: UInt8.self, at: 24))  }
   @discardableResult public func mutate(test2: MyGame_Example_Color) -> Bool { return _accessor.mutate(test2.rawValue, index: 24) }
   public var test3: MyGame_Example_Test_Mutable { return MyGame_Example_Test_Mutable(_accessor.bb, o: _accessor.position + 26) }
 
@@ -781,7 +787,7 @@ internal struct MyGame_Example_TestSimpleTableWithEnum: FlatBufferTable, Flatbuf
     var p: VOffset { self.rawValue }
   }
 
-  internal var color: MyGame_Example_Color { let o = _accessor.offset(VTOFFSET.color.v); return o == 0 ? .green : MyGame_Example_Color(rawValue: _accessor.readBuffer(of: UInt8.self, at: o)) ?? .green }
+  internal var color: MyGame_Example_Color { let o = _accessor.offset(VTOFFSET.color.v); return o == 0 ? .green : MyGame_Example_Color(rawValue: _accessor.readBuffer(of: UInt8.self, at: o))  }
   @discardableResult internal func mutate(color: MyGame_Example_Color) -> Bool {let o = _accessor.offset(VTOFFSET.color.v);  return _accessor.mutate(color.rawValue, index: o) }
   internal static func startTestSimpleTableWithEnum(_ fbb: inout FlatBufferBuilder) -> UOffset { fbb.startTable(with: 1) }
   internal static func add(color: MyGame_Example_Color, _ fbb: inout FlatBufferBuilder) { fbb.add(element: color.rawValue, def: 2, at: VTOFFSET.color.p) }
@@ -1175,7 +1181,7 @@ public struct MyGame_Example_Monster: FlatBufferTable, FlatbuffersVectorInitiali
   public var inventory: FlatbufferVector<UInt8> { return _accessor.vector(at: VTOFFSET.inventory.v, byteSize: 1) }
   public func mutate(inventory: UInt8, at index: Int32) -> Bool { let o = _accessor.offset(VTOFFSET.inventory.v); return _accessor.directMutate(inventory, index: _accessor.vector(at: o) + index * 1) }
   public func withUnsafePointerToInventory<T>(_ body: (UnsafeRawBufferPointer, Int) throws -> T) rethrows -> T? { return try _accessor.withUnsafePointerToSlice(at: VTOFFSET.inventory.v, body: body) }
-  public var color: MyGame_Example_Color { let o = _accessor.offset(VTOFFSET.color.v); return o == 0 ? .blue : MyGame_Example_Color(rawValue: _accessor.readBuffer(of: UInt8.self, at: o)) ?? .blue }
+  public var color: MyGame_Example_Color { let o = _accessor.offset(VTOFFSET.color.v); return o == 0 ? .blue : MyGame_Example_Color(rawValue: _accessor.readBuffer(of: UInt8.self, at: o))  }
   @discardableResult public func mutate(color: MyGame_Example_Color) -> Bool {let o = _accessor.offset(VTOFFSET.color.v);  return _accessor.mutate(color.rawValue, index: o) }
   public var testType: MyGame_Example_Any_ { let o = _accessor.offset(VTOFFSET.testType.v); return o == 0 ? .none_ : MyGame_Example_Any_(rawValue: _accessor.readBuffer(of: UInt8.self, at: o)) ?? .none_ }
   public func test<T: FlatbuffersInitializable>(type: T.Type) -> T? { let o = _accessor.offset(VTOFFSET.test.v); return o == 0 ? nil : _accessor.union(o) }
@@ -1269,9 +1275,9 @@ public struct MyGame_Example_Monster: FlatBufferTable, FlatbuffersVectorInitiali
   public func scalarKeySortedTablesBy(key: UInt16) -> MyGame_Example_Stat? { let o = _accessor.offset(VTOFFSET.scalarKeySortedTables.v); return o == 0 ? nil : MyGame_Example_Stat.lookupByKey(vector: _accessor.vector(at: o), key: key, fbb: _accessor.bb) }
   public var nativeInline: MyGame_Example_Test? { let o = _accessor.offset(VTOFFSET.nativeInline.v); return o == 0 ? nil : _accessor.readBuffer(of: MyGame_Example_Test.self, at: o) }
   public var mutableNativeInline: MyGame_Example_Test_Mutable? { let o = _accessor.offset(VTOFFSET.nativeInline.v); return o == 0 ? nil : MyGame_Example_Test_Mutable(_accessor.bb, o: o + _accessor.position) }
-  public var longEnumNonEnumDefault: MyGame_Example_LongEnum { let o = _accessor.offset(VTOFFSET.longEnumNonEnumDefault.v); return o == 0 ? .longone : MyGame_Example_LongEnum(rawValue: _accessor.readBuffer(of: UInt64.self, at: o)) ?? .longone }
+  public var longEnumNonEnumDefault: MyGame_Example_LongEnum { let o = _accessor.offset(VTOFFSET.longEnumNonEnumDefault.v); return o == 0 ? .longone : MyGame_Example_LongEnum(rawValue: _accessor.readBuffer(of: UInt64.self, at: o))  }
   @discardableResult public func mutate(longEnumNonEnumDefault: MyGame_Example_LongEnum) -> Bool {let o = _accessor.offset(VTOFFSET.longEnumNonEnumDefault.v);  return _accessor.mutate(longEnumNonEnumDefault.rawValue, index: o) }
-  public var longEnumNormalDefault: MyGame_Example_LongEnum { let o = _accessor.offset(VTOFFSET.longEnumNormalDefault.v); return o == 0 ? .longone : MyGame_Example_LongEnum(rawValue: _accessor.readBuffer(of: UInt64.self, at: o)) ?? .longone }
+  public var longEnumNormalDefault: MyGame_Example_LongEnum { let o = _accessor.offset(VTOFFSET.longEnumNormalDefault.v); return o == 0 ? .longone : MyGame_Example_LongEnum(rawValue: _accessor.readBuffer(of: UInt64.self, at: o))  }
   @discardableResult public func mutate(longEnumNormalDefault: MyGame_Example_LongEnum) -> Bool {let o = _accessor.offset(VTOFFSET.longEnumNormalDefault.v);  return _accessor.mutate(longEnumNormalDefault.rawValue, index: o) }
   public var nanDefault: Float32 { let o = _accessor.offset(VTOFFSET.nanDefault.v); return o == 0 ? .nan : _accessor.readBuffer(of: Float32.self, at: o) }
   @discardableResult public func mutate(nanDefault: Float32) -> Bool {let o = _accessor.offset(VTOFFSET.nanDefault.v);  return _accessor.mutate(nanDefault, index: o) }
